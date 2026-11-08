@@ -91,7 +91,7 @@ zod 4.6.7
 bcryptjs 3.0.3
 jsonwebtoken 9.0.3
 cookie-parser 1.4.7
-helmet 8.7.3
+helmet 8.3.0
 cors 2.8.6
 express-rate-limit 8.7.3
 pino 10.4.0
