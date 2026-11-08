@@ -1,18 +1,75 @@
-import { Link, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useLogout, useSesion } from '../hooks/useSesion.js';
+import { etiquetaRol } from '../utils/roles.js';
+
+function claseEnlace({ isActive }) {
+  return [
+    'rounded px-3 py-1.5 text-sm transition-colors',
+    isActive
+      ? 'bg-teal-50 font-medium text-teal-800'
+      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+  ].join(' ');
+}
 
 export function Layout() {
+  const { data } = useSesion();
+  const cerrarSesion = useLogout();
+  const navegar = useNavigate();
+
+  const usuario = data?.usuario;
+
+  function alSalir() {
+    cerrarSesion.mutate(undefined, {
+      onSettled: () => navegar('/login', { replace: true }),
+    });
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <Link to="/" className="text-lg font-semibold tracking-tight text-teal-800">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
+          <NavLink to="/" end className="text-lg font-semibold tracking-tight text-teal-800">
             Veterinaria
-          </Link>
-          <span className="text-sm text-slate-500">Etapa 1 · Fase 0</span>
+          </NavLink>
+
+          <nav className="flex flex-wrap items-center gap-1" aria-label="Navegación principal">
+            <NavLink to="/" end className={claseEnlace}>
+              Inicio
+            </NavLink>
+
+            {usuario?.rol === 'admin' && (
+              <>
+                <NavLink to="/usuarios" className={claseEnlace}>
+                  Usuarios
+                </NavLink>
+                <NavLink to="/auditoria" className={claseEnlace}>
+                  Auditoría
+                </NavLink>
+              </>
+            )}
+          </nav>
+
+          <div className="ml-auto flex items-center gap-3">
+            {usuario && (
+              <div className="text-right leading-tight">
+                <p className="text-sm font-medium text-slate-800">{usuario.nombreCompleto}</p>
+                <p className="text-xs text-slate-500">{etiquetaRol(usuario.rol)}</p>
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+              onClick={alSalir}
+              disabled={cerrarSesion.isPending}
+            >
+              {cerrarSesion.isPending ? 'Saliendo...' : 'Salir'}
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8">
+      <main className="mx-auto max-w-6xl px-4 py-8">
         <Outlet />
       </main>
     </div>

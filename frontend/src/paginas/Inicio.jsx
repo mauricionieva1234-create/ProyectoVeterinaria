@@ -8,8 +8,8 @@ export function Inicio() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Sistema de gestión veterinaria</h1>
         <p className="mt-2 max-w-2xl text-slate-600">
-          Base del proyecto lista. En la próxima fase se agregan la base de datos, el inicio de
-          sesión y los permisos.
+          Fase 1 lista: base de datos, inicio de sesión con cookie, permisos por rol, auditoría y
+          administración de usuarios. Las secciones clínicas llegan en las próximas fases.
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export function Inicio() {
               aria-hidden="true"
             />
             <p className="text-slate-700">
-              Conectado · {data.servicio} ·{' '}
+              Conectado — {data.servicio} —{' '}
               {new Date(data.hora).toLocaleTimeString('es-AR', {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -41,6 +41,27 @@ export function Inicio() {
             </p>
           </div>
         )}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <article className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="text-sm font-semibold text-slate-800">Recepción</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Administra clientes, pacientes y la cola diaria. No accede a datos clínicos.
+          </p>
+        </article>
+        <article className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="text-sm font-semibold text-slate-800">Veterinaria/o</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Carga visitas, medicación, registros y controles. Puede ver y editar lo clínico.
+          </p>
+        </article>
+        <article className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="text-sm font-semibold text-slate-800">Administración</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Gestiona usuarios, roles y consulta la auditoría de cada cambio.
+          </p>
+        </article>
       </div>
     </section>
   );
