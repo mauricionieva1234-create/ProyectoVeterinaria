@@ -3,11 +3,12 @@ import { env } from './env.js';
 
 const { Pool } = pg;
 
-// La conexión se crea una sola vez y se reutiliza en todo el proceso.
-// En la fase 0 puede no estar configurada; el endpoint de salud no la necesita.
-export const pool = env.DATABASE_URL
+// En tests se usa siempre la base de test, nunca la de desarrollo.
+const cadenaConexion = env.NODE_ENV === 'test' ? env.TEST_DATABASE_URL : env.DATABASE_URL;
+
+export const pool = cadenaConexion
   ? new Pool({
-      connectionString: env.DATABASE_URL,
+      connectionString: cadenaConexion,
       max: 10,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 5_000,
@@ -19,4 +20,10 @@ export function obtenerPool() {
     throw new Error('Falta DATABASE_URL en el archivo .env del backend');
   }
   return pool;
+}
+
+export async function cerrarPool() {
+  if (pool) {
+    await pool.end();
+  }
 }

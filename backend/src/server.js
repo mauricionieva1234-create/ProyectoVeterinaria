@@ -1,4 +1,5 @@
 import { app } from './app.js';
+import { cerrarPool } from './config/db.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 
@@ -9,7 +10,8 @@ const servidor = app.listen(env.PORT, () => {
 function cerrar(senal) {
   logger.info(`${senal} recibido. Cerrando el servidor...`);
 
-  servidor.close(() => {
+  servidor.close(async () => {
+    await cerrarPool();
     process.exit(0);
   });
 

@@ -26,6 +26,14 @@ export function errorSinPermiso() {
   return new ErrorHttp(403, 'SIN_PERMISO', 'No tenés permiso para realizar esta acción');
 }
 
+export function errorCredencialesInvalidas() {
+  return new ErrorHttp(401, 'CREDENCIALES_INVALIDAS', 'El email o la contraseña no son correctos');
+}
+
+export function errorUsuarioInactivo() {
+  return new ErrorHttp(403, 'USUARIO_INACTIVO', 'Tu usuario está desactivado');
+}
+
 export function errorConflicto(mensaje) {
   return new ErrorHttp(409, 'CONFLICTO', mensaje);
 }
