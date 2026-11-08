@@ -8,7 +8,16 @@
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:create": "node scripts/crear-bases.js",
+    "db:migrate": "node scripts/migrar.js up dev",
+    "db:migrate:test": "node scripts/migrar.js up test",
+    "db:rollback": "node scripts/migrar.js down dev",
+    "db:rollback:test": "node scripts/migrar.js down test",
+    "db:reset": "node scripts/reset.js",
+    "seed": "node scripts/seed.js",
+    "seed:demo": "node scripts/seed-demo.js",
+    "db:backup": "node scripts/backup.js"
   },
   "dependencies": {
     "bcryptjs": "3.0.3",
