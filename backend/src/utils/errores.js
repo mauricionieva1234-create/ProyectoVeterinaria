@@ -34,6 +34,11 @@ export function errorUsuarioInactivo() {
   return new ErrorHttp(403, 'USUARIO_INACTIVO', 'Tu usuario está desactivado');
 }
 
-export function errorConflicto(mensaje) {
-  return new ErrorHttp(409, 'CONFLICTO', mensaje);
+export function errorConflicto(mensaje, detalles = []) {
+  return new ErrorHttp(409, 'CONFLICTO', mensaje, detalles);
+}
+
+// El documento de un cliente no es único: el alta avisa y el usuario decide.
+export function errorClienteDuplicado(mensaje, detalles = []) {
+  return new ErrorHttp(409, 'CLIENTE_DUPLICADO', mensaje, detalles);
 }
