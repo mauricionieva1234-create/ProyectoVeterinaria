@@ -8,8 +8,8 @@ export function Inicio() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Sistema de gestión veterinaria</h1>
         <p className="mt-2 max-w-2xl text-slate-600">
-          Fase 1 lista: base de datos, inicio de sesión con cookie, permisos por rol, auditoría y
-          administración de usuarios. Las secciones clínicas llegan en las próximas fases.
+          Fase 2 lista: clientes, pacientes, catálogos de especies y razas, fichas incompletas y
+          unión de duplicados. La cola de espera y lo clínico llegan en las próximas fases.
         </p>
       </div>
 

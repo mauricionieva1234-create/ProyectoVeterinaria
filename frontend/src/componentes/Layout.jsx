@@ -37,6 +37,16 @@ export function Layout() {
               Inicio
             </NavLink>
 
+            <NavLink to="/clientes" className={claseEnlace}>
+              Clientes
+            </NavLink>
+            <NavLink to="/fichas-incompletas" className={claseEnlace}>
+              Fichas incompletas
+            </NavLink>
+            <NavLink to="/catalogos" className={claseEnlace}>
+              Catálogos
+            </NavLink>
+
             {usuario?.rol === 'admin' && (
               <>
                 <NavLink to="/usuarios" className={claseEnlace}>

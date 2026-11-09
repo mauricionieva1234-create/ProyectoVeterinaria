@@ -37,3 +37,29 @@ export function enmascararDocumento(documento) {
 
   return `***.***.${limpio.slice(-3)}`;
 }
+
+// Edad legible a partir de una fecha aaaa-mm-dd. Se calcula en UTC para que el
+// cambio de zona horaria no corra un día.
+export function calcularEdad(fecha) {
+  if (!fecha) return '';
+
+  const [anio, mes, dia] = String(fecha).split('-').map(Number);
+  if (!anio || !mes || !dia) return '';
+
+  const hoy = new Date();
+  let meses = (hoy.getUTCFullYear() - anio) * 12 + (hoy.getUTCMonth() + 1 - mes);
+
+  if (hoy.getUTCDate() < dia) {
+    meses -= 1;
+  }
+
+  if (meses < 0) return '';
+
+  const anios = Math.floor(meses / 12);
+
+  if (anios >= 1) {
+    return `${anios} ${anios === 1 ? 'año' : 'años'}`;
+  }
+
+  return `${meses} ${meses === 1 ? 'mes' : 'meses'}`;
+}
