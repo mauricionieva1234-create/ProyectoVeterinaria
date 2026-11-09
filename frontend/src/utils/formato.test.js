@@ -6,6 +6,10 @@ describe('helpers de formato', () => {
     expect(formatearFecha('2026-11-08T15:30:00.000Z')).toBe('08/11/2026');
   });
 
+  it('no corre un día las fechas sin hora', () => {
+    expect(formatearFecha('2021-04-15')).toBe('15/04/2021');
+  });
+
   it('formatea la hora en formato de 24 horas', () => {
     expect(formatearHora('2026-11-08T15:30:00.000Z')).toBe('12:30');
   });

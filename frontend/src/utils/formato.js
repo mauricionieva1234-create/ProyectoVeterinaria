@@ -7,6 +7,13 @@ function aFecha(valor) {
 }
 
 export function formatearFecha(valor) {
+  // Las fechas sin hora (aaaa-mm-dd) se muestran tal cual. Convertirlas a Date
+  // las interpreta como UTC y en Tucumán retroceden un día.
+  if (typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(valor.trim())) {
+    const [anio, mes, dia] = valor.trim().split('-');
+    return `${dia}/${mes}/${anio}`;
+  }
+
   const fecha = aFecha(valor);
   if (!fecha) return '';
 
@@ -38,18 +45,31 @@ export function enmascararDocumento(documento) {
   return `***.***.${limpio.slice(-3)}`;
 }
 
-// Edad legible a partir de una fecha aaaa-mm-dd. Se calcula en UTC para que el
-// cambio de zona horaria no corra un día.
+// Edad legible a partir de una fecha aaaa-mm-dd. La fecha de hoy se toma en la
+// zona de Tucumán para que el cambio de zona horaria no corra un día.
 export function calcularEdad(fecha) {
   if (!fecha) return '';
 
   const [anio, mes, dia] = String(fecha).split('-').map(Number);
   if (!anio || !mes || !dia) return '';
 
-  const hoy = new Date();
-  let meses = (hoy.getUTCFullYear() - anio) * 12 + (hoy.getUTCMonth() + 1 - mes);
+  // La fecha de hoy se toma en la zona de Tucumán, igual que el resto de la
+  // interfaz, para no adelantar un día cerca de la medianoche.
+  const partes = new Intl.DateTimeFormat('en-CA', {
+    timeZone: ZONA_HORARIA,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
 
-  if (hoy.getUTCDate() < dia) {
+  const parte = (tipo) => Number(partes.find((valor) => valor.type === tipo)?.value);
+  const anioHoy = parte('year');
+  const mesHoy = parte('month');
+  const diaHoy = parte('day');
+
+  let meses = (anioHoy - anio) * 12 + (mesHoy - mes);
+
+  if (diaHoy < dia) {
     meses -= 1;
   }
 
