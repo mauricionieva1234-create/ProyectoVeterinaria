@@ -7,13 +7,16 @@ CREATE EXTENSION IF NOT EXISTS unaccent;
 
 -- Normaliza un texto para buscar: minúsculas y sin tildes.
 -- Se declara IMMUTABLE para poder usarla dentro de índices.
+-- `unaccent` se califica con el esquema porque, al crear un índice, PostgreSQL
+-- inlinea esta función y resuelve el cuerpo con un search_path restringido.
+-- La extensión se crea en `public` más arriba.
 CREATE OR REPLACE FUNCTION fn_sin_tildes(valor text)
 RETURNS text
 LANGUAGE sql
 IMMUTABLE
 PARALLEL SAFE
 AS $$
-  SELECT lower(unaccent(coalesce(valor, '')));
+  SELECT lower(public.unaccent(coalesce(valor, '')));
 $$;
 
 -- Mantiene actualizado_en al día en cada UPDATE. En el INSERT la columna
