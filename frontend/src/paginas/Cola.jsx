@@ -23,8 +23,18 @@ import {
 } from '../utils/etiquetasCola.js';
 import { formatearFecha, formatearHora } from '../utils/formato.js';
 
-const claseBotonAccion =
-  'rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-100 disabled:opacity-50';
+// Botones de la columna de acciones. Comparten base y se diferencian por color
+// para que la jerarquía se lea de un vistazo: atención, urgencia y cierre.
+const baseBotonAccion =
+  'inline-flex items-center justify-center whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50';
+
+const claseBotonPrimario = `${baseBotonAccion} bg-teal-700 text-white shadow-sm hover:bg-teal-800`;
+const claseBotonConsultorio = `${baseBotonAccion} bg-sky-100 text-sky-900 hover:bg-sky-200`;
+const claseBotonUrgencia = `${baseBotonAccion} bg-amber-100 text-amber-900 hover:bg-amber-200`;
+const claseBotonConfirmar = `${baseBotonAccion} bg-rose-600 text-white shadow-sm hover:bg-rose-700`;
+const claseBotonDescartar = `${baseBotonAccion} border border-slate-300 bg-white text-slate-600 hover:bg-slate-100`;
+
+const claseBotonCierre = 'px-2 py-1 text-xs font-medium transition-colors disabled:opacity-50';
 
 function claseUrgencia(estado) {
   if (estado === 'confirmada') return 'bg-red-50 text-red-700';
@@ -86,70 +96,85 @@ export function Cola() {
       return <span className="text-slate-400">—</span>;
     }
 
+    const puedeDecidirUrgencia =
+      puede('cola.confirmar_urgencia') && ['posible', 'sin_marca'].includes(ingreso.urgenciaEstado);
+    const puedeDescartar = puede('cola.confirmar_urgencia') && ingreso.urgenciaEstado === 'posible';
+    const puedeMarcar =
+      puede('cola.marcar_urgencia') &&
+      ingreso.estado === 'esperando' &&
+      ['sin_marca', 'descartada'].includes(ingreso.urgenciaEstado);
+
     return (
-      <div className="flex flex-wrap justify-end gap-1">
-        {puede('visitas.crear') && (
-          <button
-            type="button"
-            className={claseBotonAccion}
-            onClick={() => setIngresoParaVisita(ingreso)}
-          >
-            Iniciar visita
-          </button>
+      <div className="flex min-w-[196px] flex-col items-end gap-1.5">
+        {(puede('visitas.crear') || (puede('cola.editar') && ingreso.estado === 'esperando')) && (
+          <div className="flex flex-wrap justify-end gap-1.5">
+            {puede('visitas.crear') && (
+              <button
+                type="button"
+                className={claseBotonPrimario}
+                onClick={() => setIngresoParaVisita(ingreso)}
+              >
+                Iniciar visita
+              </button>
+            )}
+
+            {puede('cola.editar') && ingreso.estado === 'esperando' && (
+              <button
+                type="button"
+                className={claseBotonConsultorio}
+                onClick={() => alConsultorio.mutate(ingreso.id)}
+                disabled={alConsultorio.isPending}
+              >
+                Al consultorio
+              </button>
+            )}
+          </div>
         )}
 
-        {puede('cola.marcar_urgencia') &&
-          ingreso.estado === 'esperando' &&
-          ['sin_marca', 'descartada'].includes(ingreso.urgenciaEstado) && (
-            <button
-              type="button"
-              className={claseBotonAccion}
-              onClick={() => marcarPosible.mutate(ingreso.id)}
-              disabled={marcarPosible.isPending}
-            >
-              Marcar urgencia
-            </button>
-          )}
+        {(puedeMarcar || puedeDecidirUrgencia || puedeDescartar) && (
+          <div className="flex flex-wrap justify-end gap-1.5">
+            {puedeMarcar && (
+              <button
+                type="button"
+                className={claseBotonUrgencia}
+                onClick={() => marcarPosible.mutate(ingreso.id)}
+                disabled={marcarPosible.isPending}
+              >
+                Marcar urgencia
+              </button>
+            )}
 
-        {puede('cola.confirmar_urgencia') &&
-          ['posible', 'sin_marca'].includes(ingreso.urgenciaEstado) && (
-            <button
-              type="button"
-              className={claseBotonAccion}
-              onClick={() => decidir.mutate({ id: ingreso.id, decision: 'confirmada' })}
-              disabled={decidir.isPending}
-            >
-              Confirmar urgencia
-            </button>
-          )}
+            {puedeDecidirUrgencia && (
+              <button
+                type="button"
+                className={claseBotonConfirmar}
+                aria-label="Confirmar urgencia"
+                onClick={() => decidir.mutate({ id: ingreso.id, decision: 'confirmada' })}
+                disabled={decidir.isPending}
+              >
+                Confirmar
+              </button>
+            )}
 
-        {puede('cola.confirmar_urgencia') && ingreso.urgenciaEstado === 'posible' && (
-          <button
-            type="button"
-            className={claseBotonAccion}
-            onClick={() => decidir.mutate({ id: ingreso.id, decision: 'descartada' })}
-            disabled={decidir.isPending}
-          >
-            Descartar urgencia
-          </button>
-        )}
-
-        {puede('cola.editar') && ingreso.estado === 'esperando' && (
-          <button
-            type="button"
-            className={claseBotonAccion}
-            onClick={() => alConsultorio.mutate(ingreso.id)}
-            disabled={alConsultorio.isPending}
-          >
-            Al consultorio
-          </button>
+            {puedeDescartar && (
+              <button
+                type="button"
+                className={claseBotonDescartar}
+                aria-label="Descartar urgencia"
+                onClick={() => decidir.mutate({ id: ingreso.id, decision: 'descartada' })}
+                disabled={decidir.isPending}
+              >
+                Descartar
+              </button>
+            )}
+          </div>
         )}
 
         {puede('cola.editar') && (
-          <>
+          <div className="inline-flex overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
             <button
               type="button"
-              className={claseBotonAccion}
+              className={`${claseBotonCierre} text-emerald-700 hover:bg-emerald-50`}
               onClick={() => cambiarEstado.mutate({ id: ingreso.id, estado: 'atendido' })}
               disabled={cambiarEstado.isPending}
             >
@@ -157,7 +182,7 @@ export function Cola() {
             </button>
             <button
               type="button"
-              className={claseBotonAccion}
+              className={`${claseBotonCierre} border-l border-slate-200 text-slate-600 hover:bg-slate-50`}
               onClick={() => cambiarEstado.mutate({ id: ingreso.id, estado: 'se_retiro' })}
               disabled={cambiarEstado.isPending}
             >
@@ -165,13 +190,13 @@ export function Cola() {
             </button>
             <button
               type="button"
-              className={claseBotonAccion}
+              className={`${claseBotonCierre} border-l border-slate-200 text-rose-700 hover:bg-rose-50`}
               onClick={() => cambiarEstado.mutate({ id: ingreso.id, estado: 'cancelado' })}
               disabled={cambiarEstado.isPending}
             >
               Cancelar
             </button>
-          </>
+          </div>
         )}
       </div>
     );
