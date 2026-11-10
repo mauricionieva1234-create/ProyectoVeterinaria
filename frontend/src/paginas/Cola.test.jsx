@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Cola } from './Cola.jsx';
@@ -102,17 +102,24 @@ describe('Cola', () => {
 
     await screen.findByText('Paciente Demo');
 
-    expect(screen.queryByRole('button', { name: 'Confirmar urgencia' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Descartar urgencia' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Al consultorio' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Más acciones' }));
+
+    expect(screen.queryByRole('menuitem', { name: 'Confirmar urgencia' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Descartar urgencia' })).toBeNull();
+    expect(screen.getByRole('menuitem', { name: 'Atendido' })).toBeInTheDocument();
   });
 
   it('el veterinario ve las acciones de confirmar y descartar urgencia', async () => {
     vi.stubGlobal('fetch', crearFetch(PERMISOS_VETERINARIO));
     renderizarCola();
 
-    expect(await screen.findByRole('button', { name: 'Confirmar urgencia' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Descartar urgencia' })).toBeInTheDocument();
+    await screen.findByRole('button', { name: 'Iniciar visita' });
+    fireEvent.click(screen.getByRole('button', { name: 'Más acciones' }));
+
+    expect(screen.getByRole('menuitem', { name: 'Confirmar urgencia' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Descartar urgencia' })).toBeInTheDocument();
   });
 
   it('el veterinario puede iniciar la visita desde la cola', async () => {

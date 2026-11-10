@@ -12,6 +12,7 @@ import { FormularioAltaRapida } from '../componentes/FormularioAltaRapida.jsx';
 import { FormularioIngreso } from '../componentes/FormularioIngreso.jsx';
 import { FormularioVisita } from '../componentes/FormularioVisita.jsx';
 import { Modal } from '../componentes/Modal.jsx';
+import { MenuAcciones } from '../componentes/MenuAcciones.jsx';
 import { EncabezadoPagina, Panel } from '../componentes/Panel.jsx';
 import { claseBotonEncabezado, claseBotonEncabezadoSolido } from '../componentes/tonos.js';
 import { useSesion } from '../hooks/useSesion.js';
@@ -23,18 +24,12 @@ import {
 } from '../utils/etiquetasCola.js';
 import { formatearFecha, formatearHora } from '../utils/formato.js';
 
-// Botones de la columna de acciones. Comparten base y se diferencian por color
-// para que la jerarquía se lea de un vistazo: atención, urgencia y cierre.
+// La celda de acciones muestra una sola acción principal; el resto vive en el
+// menú «⋯» para que la tabla quede liviana.
 const baseBotonAccion =
   'inline-flex items-center justify-center whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50';
 
 const claseBotonPrimario = `${baseBotonAccion} bg-teal-700 text-white shadow-sm hover:bg-teal-800`;
-const claseBotonConsultorio = `${baseBotonAccion} bg-sky-100 text-sky-900 hover:bg-sky-200`;
-const claseBotonUrgencia = `${baseBotonAccion} bg-amber-100 text-amber-900 hover:bg-amber-200`;
-const claseBotonConfirmar = `${baseBotonAccion} bg-rose-600 text-white shadow-sm hover:bg-rose-700`;
-const claseBotonDescartar = `${baseBotonAccion} border border-slate-300 bg-white text-slate-600 hover:bg-slate-100`;
-
-const claseBotonCierre = 'px-2 py-1 text-xs font-medium transition-colors disabled:opacity-50';
 
 function claseUrgencia(estado) {
   if (estado === 'confirmada') return 'bg-red-50 text-red-700';
@@ -96,108 +91,109 @@ export function Cola() {
       return <span className="text-slate-400">—</span>;
     }
 
-    const puedeDecidirUrgencia =
-      puede('cola.confirmar_urgencia') && ['posible', 'sin_marca'].includes(ingreso.urgenciaEstado);
-    const puedeDescartar = puede('cola.confirmar_urgencia') && ingreso.urgenciaEstado === 'posible';
-    const puedeMarcar =
+    const puedeIniciarVisita = puede('visitas.crear');
+    const puedeConsultorio = puede('cola.editar') && ingreso.estado === 'esperando';
+
+    // Si el usuario puede iniciar la visita, esa es la acción principal; si no,
+    // el pase al consultorio ocupa ese lugar. El resto se va al menú.
+    const primario = puedeIniciarVisita
+      ? { etiqueta: 'Iniciar visita', onClick: () => setIngresoParaVisita(ingreso) }
+      : puedeConsultorio
+        ? {
+            etiqueta: 'Al consultorio',
+            onClick: () => alConsultorio.mutate(ingreso.id),
+            deshabilitado: alConsultorio.isPending,
+          }
+        : null;
+
+    const urgencia = [];
+
+    if (
       puede('cola.marcar_urgencia') &&
       ingreso.estado === 'esperando' &&
-      ['sin_marca', 'descartada'].includes(ingreso.urgenciaEstado);
+      ['sin_marca', 'descartada'].includes(ingreso.urgenciaEstado)
+    ) {
+      urgencia.push({
+        etiqueta: 'Marcar urgencia',
+        tono: 'urgencia',
+        onClick: () => marcarPosible.mutate(ingreso.id),
+        deshabilitado: marcarPosible.isPending,
+      });
+    }
+
+    if (
+      puede('cola.confirmar_urgencia') &&
+      ['posible', 'sin_marca'].includes(ingreso.urgenciaEstado)
+    ) {
+      urgencia.push({
+        etiqueta: 'Confirmar urgencia',
+        tono: 'peligro',
+        onClick: () => decidir.mutate({ id: ingreso.id, decision: 'confirmada' }),
+        deshabilitado: decidir.isPending,
+      });
+    }
+
+    if (puede('cola.confirmar_urgencia') && ingreso.urgenciaEstado === 'posible') {
+      urgencia.push({
+        etiqueta: 'Descartar urgencia',
+        onClick: () => decidir.mutate({ id: ingreso.id, decision: 'descartada' }),
+        deshabilitado: decidir.isPending,
+      });
+    }
+
+    const atencion = [];
+
+    if (puedeConsultorio && primario?.etiqueta !== 'Al consultorio') {
+      atencion.push({
+        etiqueta: 'Al consultorio',
+        onClick: () => alConsultorio.mutate(ingreso.id),
+        deshabilitado: alConsultorio.isPending,
+      });
+    }
+
+    const cierre = [];
+
+    if (puede('cola.editar')) {
+      cierre.push(
+        {
+          etiqueta: 'Atendido',
+          tono: 'exito',
+          onClick: () => cambiarEstado.mutate({ id: ingreso.id, estado: 'atendido' }),
+          deshabilitado: cambiarEstado.isPending,
+        },
+        {
+          etiqueta: 'Se retiró',
+          onClick: () => cambiarEstado.mutate({ id: ingreso.id, estado: 'se_retiro' }),
+          deshabilitado: cambiarEstado.isPending,
+        },
+        {
+          etiqueta: 'Cancelar',
+          tono: 'peligro',
+          onClick: () => cambiarEstado.mutate({ id: ingreso.id, estado: 'cancelado' }),
+          deshabilitado: cambiarEstado.isPending,
+        },
+      );
+    }
+
+    const grupos = [urgencia, atencion, cierre].filter((grupo) => grupo.length > 0);
+    const acciones = grupos.flatMap((grupo, indice) =>
+      indice === 0 ? grupo : [{ separador: true }, ...grupo],
+    );
 
     return (
-      <div className="flex min-w-[196px] flex-col items-end gap-1.5">
-        {(puede('visitas.crear') || (puede('cola.editar') && ingreso.estado === 'esperando')) && (
-          <div className="flex flex-wrap justify-end gap-1.5">
-            {puede('visitas.crear') && (
-              <button
-                type="button"
-                className={claseBotonPrimario}
-                onClick={() => setIngresoParaVisita(ingreso)}
-              >
-                Iniciar visita
-              </button>
-            )}
-
-            {puede('cola.editar') && ingreso.estado === 'esperando' && (
-              <button
-                type="button"
-                className={claseBotonConsultorio}
-                onClick={() => alConsultorio.mutate(ingreso.id)}
-                disabled={alConsultorio.isPending}
-              >
-                Al consultorio
-              </button>
-            )}
-          </div>
+      <div className="flex items-center justify-end gap-1.5">
+        {primario && (
+          <button
+            type="button"
+            className={claseBotonPrimario}
+            onClick={primario.onClick}
+            disabled={primario.deshabilitado}
+          >
+            {primario.etiqueta}
+          </button>
         )}
 
-        {(puedeMarcar || puedeDecidirUrgencia || puedeDescartar) && (
-          <div className="flex flex-wrap justify-end gap-1.5">
-            {puedeMarcar && (
-              <button
-                type="button"
-                className={claseBotonUrgencia}
-                onClick={() => marcarPosible.mutate(ingreso.id)}
-                disabled={marcarPosible.isPending}
-              >
-                Marcar urgencia
-              </button>
-            )}
-
-            {puedeDecidirUrgencia && (
-              <button
-                type="button"
-                className={claseBotonConfirmar}
-                aria-label="Confirmar urgencia"
-                onClick={() => decidir.mutate({ id: ingreso.id, decision: 'confirmada' })}
-                disabled={decidir.isPending}
-              >
-                Confirmar
-              </button>
-            )}
-
-            {puedeDescartar && (
-              <button
-                type="button"
-                className={claseBotonDescartar}
-                aria-label="Descartar urgencia"
-                onClick={() => decidir.mutate({ id: ingreso.id, decision: 'descartada' })}
-                disabled={decidir.isPending}
-              >
-                Descartar
-              </button>
-            )}
-          </div>
-        )}
-
-        {puede('cola.editar') && (
-          <div className="inline-flex overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-            <button
-              type="button"
-              className={`${claseBotonCierre} text-emerald-700 hover:bg-emerald-50`}
-              onClick={() => cambiarEstado.mutate({ id: ingreso.id, estado: 'atendido' })}
-              disabled={cambiarEstado.isPending}
-            >
-              Atendido
-            </button>
-            <button
-              type="button"
-              className={`${claseBotonCierre} border-l border-slate-200 text-slate-600 hover:bg-slate-50`}
-              onClick={() => cambiarEstado.mutate({ id: ingreso.id, estado: 'se_retiro' })}
-              disabled={cambiarEstado.isPending}
-            >
-              Se retiró
-            </button>
-            <button
-              type="button"
-              className={`${claseBotonCierre} border-l border-slate-200 text-rose-700 hover:bg-rose-50`}
-              onClick={() => cambiarEstado.mutate({ id: ingreso.id, estado: 'cancelado' })}
-              disabled={cambiarEstado.isPending}
-            >
-              Cancelar
-            </button>
-          </div>
-        )}
+        {acciones.length > 0 && <MenuAcciones acciones={acciones} />}
       </div>
     );
   }
@@ -253,15 +249,15 @@ export function Cola() {
           <table className="min-w-full divide-y divide-slate-200 text-sm">
             <thead className="bg-amber-100/70 text-left text-xs uppercase tracking-wide text-amber-900">
               <tr>
-                <th className="px-3 py-3">Nº</th>
+                <th className="px-3 py-3 whitespace-nowrap">Nº</th>
                 <th className="px-3 py-3">Paciente</th>
                 <th className="px-3 py-3">Dueño</th>
-                <th className="px-3 py-3">Especie</th>
-                <th className="px-3 py-3">Servicio</th>
-                <th className="px-3 py-3">Urgencia</th>
-                <th className="px-3 py-3">Estado</th>
-                <th className="px-3 py-3">Llegada</th>
-                <th className="px-3 py-3 text-right">Acciones</th>
+                <th className="hidden px-3 py-3 whitespace-nowrap lg:table-cell">Especie</th>
+                <th className="hidden px-3 py-3 whitespace-nowrap lg:table-cell">Servicio</th>
+                <th className="px-3 py-3 whitespace-nowrap">Urgencia</th>
+                <th className="px-3 py-3 whitespace-nowrap">Estado</th>
+                <th className="px-3 py-3 whitespace-nowrap">Llegada</th>
+                <th className="px-3 py-3 text-right whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -319,11 +315,13 @@ export function Cola() {
                       {ingreso.cliente.telefonoPrincipal ?? 'Sin teléfono'}
                     </p>
                   </td>
-                  <td className="px-3 py-3 text-slate-600">{ingreso.paciente.especieNombre}</td>
-                  <td className="px-3 py-3 text-slate-600">
+                  <td className="hidden px-3 py-3 text-slate-600 lg:table-cell">
+                    {ingreso.paciente.especieNombre}
+                  </td>
+                  <td className="hidden px-3 py-3 text-slate-600 lg:table-cell">
                     {etiqueta(ETIQUETAS_SERVICIO, ingreso.servicio)}
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="px-3 py-3 whitespace-nowrap">
                     <span
                       className={[
                         'rounded-full px-2 py-0.5 text-xs font-medium',
@@ -333,7 +331,7 @@ export function Cola() {
                       {etiqueta(ETIQUETAS_URGENCIA, ingreso.urgenciaEstado)}
                     </span>
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="px-3 py-3 whitespace-nowrap">
                     <span
                       className={[
                         'rounded-full px-2 py-0.5 text-xs font-medium',
@@ -343,7 +341,9 @@ export function Cola() {
                       {etiqueta(ETIQUETAS_ESTADO, ingreso.estado)}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-slate-600">{formatearHora(ingreso.horaLlegada)}</td>
+                  <td className="px-3 py-3 whitespace-nowrap text-slate-600">
+                    {formatearHora(ingreso.horaLlegada)}
+                  </td>
                   <td className="px-3 py-3 text-right">{accionesDe(ingreso)}</td>
                 </tr>
               ))}
