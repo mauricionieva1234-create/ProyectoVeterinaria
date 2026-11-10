@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   cambiarEstadoIngreso,
   decidirUrgencia,
@@ -10,6 +10,7 @@ import {
 } from '../api/cola.js';
 import { FormularioAltaRapida } from '../componentes/FormularioAltaRapida.jsx';
 import { FormularioIngreso } from '../componentes/FormularioIngreso.jsx';
+import { FormularioVisita } from '../componentes/FormularioVisita.jsx';
 import { Modal } from '../componentes/Modal.jsx';
 import { useSesion } from '../hooks/useSesion.js';
 import {
@@ -40,12 +41,14 @@ function claseEstado(estado) {
 
 export function Cola() {
   const queryClient = useQueryClient();
+  const navegar = useNavigate();
   const { data: sesion } = useSesion();
   const permisos = sesion?.permisos ?? [];
   const puede = (accion) => permisos.includes(accion);
 
   const [modalIngreso, setModalIngreso] = useState(false);
   const [modalAlta, setModalAlta] = useState(false);
+  const [ingresoParaVisita, setIngresoParaVisita] = useState(null);
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ['cola'],
@@ -83,6 +86,16 @@ export function Cola() {
 
     return (
       <div className="flex flex-wrap justify-end gap-1">
+        {puede('visitas.crear') && (
+          <button
+            type="button"
+            className={claseBotonAccion}
+            onClick={() => setIngresoParaVisita(ingreso)}
+          >
+            Iniciar visita
+          </button>
+        )}
+
         {puede('cola.marcar_urgencia') &&
           ingreso.estado === 'esperando' &&
           ['sin_marca', 'descartada'].includes(ingreso.urgenciaEstado) && (
@@ -341,6 +354,28 @@ export function Cola() {
           }}
           onCancelar={() => setModalAlta(false)}
         />
+      </Modal>
+
+      <Modal
+        abierto={Boolean(ingresoParaVisita)}
+        titulo="Iniciar visita"
+        onCerrar={() => setIngresoParaVisita(null)}
+      >
+        {ingresoParaVisita && (
+          <FormularioVisita
+            paciente={ingresoParaVisita.paciente}
+            ingresoId={ingresoParaVisita.id}
+            onGuardada={(visita) => {
+              setIngresoParaVisita(null);
+              invalidar();
+              queryClient.invalidateQueries({
+                queryKey: ['paciente', ingresoParaVisita.paciente.id],
+              });
+              navegar(`/visitas/${visita.id}`);
+            }}
+            onCancelar={() => setIngresoParaVisita(null)}
+          />
+        )}
       </Modal>
     </section>
   );

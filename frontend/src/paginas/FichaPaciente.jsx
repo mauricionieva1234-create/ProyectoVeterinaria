@@ -1,9 +1,14 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { quitarFotoPaciente, urlDescargaAdjunto } from '../api/adjuntos.js';
 import { obtenerPaciente } from '../api/pacientes.js';
 import { FormularioPaciente } from '../componentes/FormularioPaciente.jsx';
+import { FormularioVisita } from '../componentes/FormularioVisita.jsx';
+import { HistorialClinico } from '../componentes/HistorialClinico.jsx';
 import { Modal } from '../componentes/Modal.jsx';
+import { SubirAdjunto } from '../componentes/SubirAdjunto.jsx';
+import { useSesion } from '../hooks/useSesion.js';
 import { calcularEdad, formatearFecha } from '../utils/formato.js';
 
 const ETIQUETAS_SEXO = {
@@ -30,12 +35,24 @@ function Dato({ etiqueta, children }) {
 
 export function FichaPaciente() {
   const { id } = useParams();
+  const navegar = useNavigate();
   const queryClient = useQueryClient();
+  const { data: sesion } = useSesion();
+  const permisos = sesion?.permisos ?? [];
+  const puedeEditarPaciente = permisos.includes('pacientes.editar');
+  const puedeSubirAdjuntos = permisos.includes('adjuntos.crear');
+  const puedeCrearVisita = permisos.includes('visitas.crear');
   const [modalEditar, setModalEditar] = useState(false);
+  const [modalVisita, setModalVisita] = useState(false);
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ['paciente', id],
     queryFn: () => obtenerPaciente(id),
+  });
+
+  const quitarFoto = useMutation({
+    mutationFn: () => quitarFotoPaciente(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['paciente', id] }),
   });
 
   if (isPending) {
@@ -65,6 +82,12 @@ export function FichaPaciente() {
   function alGuardado() {
     setModalEditar(false);
     queryClient.invalidateQueries({ queryKey: ['paciente', id] });
+  }
+
+  function alGuardarVisita(visita) {
+    setModalVisita(false);
+    queryClient.invalidateQueries({ queryKey: ['paciente', id] });
+    navegar(`/visitas/${visita.id}`);
   }
 
   return (
@@ -102,13 +125,24 @@ export function FichaPaciente() {
           </p>
         </div>
 
-        <button
-          type="button"
-          className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
-          onClick={() => setModalEditar(true)}
-        >
-          Editar paciente
-        </button>
+        <div className="flex flex-wrap gap-2">
+          {puedeCrearVisita && !paciente.fechaDeceso && (
+            <button
+              type="button"
+              className="rounded bg-teal-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-800"
+              onClick={() => setModalVisita(true)}
+            >
+              Nueva visita
+            </button>
+          )}
+          <button
+            type="button"
+            className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
+            onClick={() => setModalEditar(true)}
+          >
+            Editar paciente
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -141,6 +175,40 @@ export function FichaPaciente() {
         </div>
 
         <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
+          <div className="space-y-2 border-b border-slate-200 pb-3">
+            <h2 className="text-sm font-semibold text-slate-800">Foto</h2>
+            {paciente.fotoAdjuntoId ? (
+              <img
+                src={urlDescargaAdjunto(paciente.fotoAdjuntoId)}
+                alt={`Foto de ${paciente.nombre}`}
+                className="h-40 w-full rounded object-cover"
+              />
+            ) : (
+              <p className="text-sm text-slate-500">Sin foto cargada.</p>
+            )}
+
+            {puedeEditarPaciente && puedeSubirAdjuntos && (
+              <SubirAdjunto pacienteId={paciente.id} fotoPaciente />
+            )}
+
+            {paciente.fotoAdjuntoId && puedeEditarPaciente && (
+              <button
+                type="button"
+                className="rounded border border-slate-300 px-3 py-1 text-xs text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+                onClick={() => quitarFoto.mutate()}
+                disabled={quitarFoto.isPending}
+              >
+                {quitarFoto.isPending ? 'Quitando...' : 'Quitar foto'}
+              </button>
+            )}
+
+            {quitarFoto.isError && (
+              <p className="text-sm text-red-700" role="alert">
+                {quitarFoto.error.message}
+              </p>
+            )}
+          </div>
+
           <h2 className="text-sm font-semibold text-slate-800">Dueño actual</h2>
           {paciente.cliente ? (
             <>
@@ -200,6 +268,8 @@ export function FichaPaciente() {
         </div>
       </div>
 
+      <HistorialClinico pacienteId={paciente.id} />
+
       <Modal abierto={modalEditar} titulo="Editar paciente" onCerrar={() => setModalEditar(false)}>
         <FormularioPaciente
           paciente={paciente}
@@ -210,6 +280,14 @@ export function FichaPaciente() {
           permitirCambioDueno
           onGuardado={alGuardado}
           onCancelar={() => setModalEditar(false)}
+        />
+      </Modal>
+
+      <Modal abierto={modalVisita} titulo="Nueva visita" onCerrar={() => setModalVisita(false)}>
+        <FormularioVisita
+          paciente={paciente}
+          onGuardada={alGuardarVisita}
+          onCancelar={() => setModalVisita(false)}
         />
       </Modal>
     </section>

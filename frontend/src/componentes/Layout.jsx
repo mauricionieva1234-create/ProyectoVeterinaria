@@ -17,6 +17,7 @@ export function Layout() {
   const navegar = useNavigate();
 
   const usuario = data?.usuario;
+  const permisos = data?.permisos ?? [];
 
   function alSalir() {
     cerrarSesion.mutate(undefined, {
@@ -43,6 +44,16 @@ export function Layout() {
             <NavLink to="/cola/sin-cerrar" className={claseEnlace}>
               Sin cerrar
             </NavLink>
+            {permisos.includes('visitas.ver') && (
+              <NavLink to="/visitas" className={claseEnlace}>
+                Visitas
+              </NavLink>
+            )}
+            {permisos.includes('controles.ver') && (
+              <NavLink to="/controles" className={claseEnlace}>
+                Controles
+              </NavLink>
+            )}
             <NavLink to="/clientes" className={claseEnlace}>
               Clientes
             </NavLink>

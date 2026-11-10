@@ -8,8 +8,8 @@ export function Inicio() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Sistema de gestión veterinaria</h1>
         <p className="mt-2 max-w-2xl text-slate-600">
-          Fase 3 lista: cola de espera diaria, urgencias, alta rápida e ingresos sin cerrar. Lo
-          clínico y las visitas llegan en la próxima fase.
+          Fase 4 lista: historial clínico con visitas, medicación, registros, controles, avisos y
+          adjuntos. Recepción administra la cola y los controles sin acceder a lo clínico.
         </p>
       </div>
 
