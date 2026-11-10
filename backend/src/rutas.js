@@ -6,6 +6,7 @@ import { rutasAuditoria } from './modulos/auditoria/rutas.js';
 import { rutasCatalogos } from './modulos/catalogos/rutas.js';
 import { rutasClientes } from './modulos/clientes/rutas.js';
 import { rutasPacientes } from './modulos/pacientes/rutas.js';
+import { rutasCola } from './modulos/cola/rutas.js';
 
 export const rutas = Router();
 
@@ -16,3 +17,4 @@ rutas.use('/auditoria', rutasAuditoria);
 rutas.use('/catalogos', rutasCatalogos);
 rutas.use('/clientes', rutasClientes);
 rutas.use('/pacientes', rutasPacientes);
+rutas.use('/cola', rutasCola);
