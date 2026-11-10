@@ -6,7 +6,7 @@ import { buscarClientePorId } from '../clientes/repositorio.js';
 import * as repositorio from './repositorio.js';
 
 export function aPacientePublico(fila) {
-  return {
+  const publico = {
     id: fila.id,
     clienteId: fila.cliente_id,
     codigoInterno: fila.codigo_interno,
@@ -32,6 +32,19 @@ export function aPacientePublico(fila) {
     creadoEn: fila.creado_en,
     actualizadoEn: fila.actualizado_en,
   };
+
+  // Las filas que vienen de la base traen el dueño resuelto por el repositorio.
+  // Los objetos que ya son públicos (por ejemplo, los que devuelve una alta)
+  // no tienen estas columnas, así que se omiten.
+  if (fila.cliente_nombre !== undefined) {
+    publico.cliente = {
+      id: fila.cliente_id,
+      nombreCompleto: `${fila.cliente_nombre} ${fila.cliente_apellido}`.trim(),
+      telefonoPrincipal: fila.cliente_telefono ?? null,
+    };
+  }
+
+  return publico;
 }
 
 // La ficha del paciente queda incompleta si es provisorio o si faltan datos

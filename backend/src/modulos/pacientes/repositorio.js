@@ -31,12 +31,18 @@ const CAMPOS_PACIENTE = `
   p.creado_en,
   p.actualizado_en,
   p.creado_por,
-  p.actualizado_por
+  p.actualizado_por,
+  c.nombre AS cliente_nombre,
+  c.apellido AS cliente_apellido,
+  c.telefono_principal AS cliente_telefono
 `;
 
+// El dueño se incluye en todas las consultas para poder distinguir mascotas
+// con el mismo nombre en los listados y buscadores.
 const JOIN_CATALOGOS = `
   JOIN especie e ON e.id = p.especie_id
   LEFT JOIN raza r ON r.id = p.raza_id
+  JOIN cliente c ON c.id = p.cliente_id
 `;
 
 export async function buscarPacientePorId(id, cliente) {
@@ -82,7 +88,7 @@ export async function listarPacientes({ pagina, limite, clienteId, buscar }) {
      FROM paciente p
      ${JOIN_CATALOGOS}
      ${donde}
-     ORDER BY p.nombre, p.id
+     ORDER BY p.nombre, c.apellido, c.nombre, p.id
      LIMIT $${parametros.length + 1} OFFSET $${parametros.length + 2}`,
     parametrosDatos,
   );

@@ -209,6 +209,26 @@ describe('pacientes', () => {
     expect(busqueda.body.datos[0].nombre).toBe('Mascota sin Datos');
   });
 
+  it('incluye el dueño en el listado para distinguir mascotas homónimas', async () => {
+    await agenteRecepcion
+      .post('/api/pacientes')
+      .send(datosPaciente({ clienteId, nombre: 'Mascota Homónima', especieId, razaId }));
+
+    await agenteRecepcion
+      .post('/api/pacientes')
+      .send(
+        datosPaciente({ clienteId: otroClienteId, nombre: 'Mascota Homónima', especieId, razaId }),
+      );
+
+    const busqueda = await agenteVet.get('/api/pacientes?buscar=homonima');
+    expect(busqueda.status).toBe(200);
+    expect(busqueda.body.datos).toHaveLength(2);
+
+    const duenos = busqueda.body.datos.map((paciente) => paciente.cliente);
+    expect(duenos.map((dueno) => dueno.nombreCompleto)).toEqual(['Cliente Dos', 'Cliente Uno']);
+    expect(duenos.map((dueno) => dueno.telefonoPrincipal)).toEqual(['3815551002', '3815551001']);
+  });
+
   it('permite crear pacientes a recepción y veterinario', async () => {
     const deRecepcion = await agenteRecepcion
       .post('/api/pacientes')
