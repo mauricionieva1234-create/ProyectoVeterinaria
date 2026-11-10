@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="titulo-logo">
+  <title id="titulo-logo">Veterinaria</title>
+  <defs>
+    <linearGradient id="marca" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d9488" />
+      <stop offset="1" stop-color="#10b981" />
+    </linearGradient>
+  </defs>
+
+  <rect x="4" y="4" width="120" height="120" rx="30" fill="url(#marca)" />
+  <circle cx="104" cy="24" r="26" fill="#ffffff" opacity="0.08" />
+
+  <!-- Huella: cuatro dedos y almohadilla -->
+  <g fill="#ffffff">
+    <ellipse cx="43" cy="45" rx="7.5" ry="10" transform="rotate(-20 43 45)" />
+    <ellipse cx="57" cy="36" rx="7.5" ry="10.5" transform="rotate(-7 57 36)" />
+    <ellipse cx="71" cy="36" rx="7.5" ry="10.5" transform="rotate(7 71 36)" />
+    <ellipse cx="85" cy="45" rx="7.5" ry="10" transform="rotate(20 85 45)" />
+    <path d="M64 62 C76 62 84 70 84 82 C84 94 76 102 64 102 C52 102 44 94 44 82 C44 70 52 62 64 62 Z" />
+  </g>
+
+  <!-- Cruz médica calada sobre la almohadilla -->
+  <g fill="#0f766e">
+    <rect x="59.5" y="69" width="9" height="26" rx="4.5" />
+    <rect x="51" y="77.5" width="26" height="9" rx="4.5" />
+  </g>
+</svg>

@@ -49,9 +49,13 @@ export function Login() {
     <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-teal-100 via-sky-50 to-violet-100 px-4 py-10 text-slate-900">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <span className="mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-linear-to-br from-teal-600 to-emerald-500 text-xl font-bold text-white shadow-lg">
-            V
-          </span>
+          <img
+            src="/logo-veterinaria.svg"
+            alt=""
+            className="mx-auto mb-3 size-16 drop-shadow-lg"
+            width="64"
+            height="64"
+          />
           <h1 className="text-2xl font-semibold tracking-tight text-teal-800">Veterinaria</h1>
           <p className="mt-1 text-sm text-slate-500">Sistema de gestión · Etapa 1</p>
         </div>

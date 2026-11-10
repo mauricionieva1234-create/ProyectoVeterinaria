@@ -35,9 +35,13 @@ export function Layout() {
             end
             className="flex items-center gap-2 text-lg font-semibold tracking-tight text-teal-900"
           >
-            <span className="flex size-8 items-center justify-center rounded-xl bg-linear-to-br from-teal-600 to-emerald-500 text-sm font-bold text-white shadow-sm">
-              V
-            </span>
+            <img
+              src="/logo-veterinaria.svg"
+              alt=""
+              className="size-9 drop-shadow-sm"
+              width="36"
+              height="36"
+            />
             Veterinaria
           </NavLink>
 
