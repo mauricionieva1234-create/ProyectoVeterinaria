@@ -86,9 +86,9 @@ Reglas:
 - Al crear un ingreso se puede marcar `marcarPosibleUrgencia: true`; en ese caso
   queda `urgencia_estado = 'posible'` y `prioridad = 'urgente'`.
 - Un paciente no puede tener dos ingresos abiertos (`esperando` o
-  `en_consulta`) el mismo día. Si pasa, `409 PACIENTE_EN_COLA`.
+  `en_consulta`) el mismo día. Si pasa, `409 CONFLICTO`.
 - Marcar posible urgencia se permite desde `sin_marca` o `descartada`. Si ya
-  está `confirmada`, `409 URGENCIA_YA_CONFIRMADA`.
+  está `confirmada`, `409 CONFLICTO`.
 - Confirmar se permite desde `posible` o `sin_marca`; descartar solo desde
   `posible`. Al confirmar se guardan `urgencia_confirmada_por` y
   `urgencia_confirmada_en`; al descartar se limpian y la prioridad vuelve a
