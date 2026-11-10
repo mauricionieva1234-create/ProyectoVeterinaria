@@ -77,7 +77,7 @@ const PERMISOS_RECEPCION = [
   'pacientes.alta_rapida',
 ];
 
-const PERMISOS_VETERINARIO = [...PERMISOS_RECEPCION, 'cola.confirmar_urgencia'];
+const PERMISOS_VETERINARIO = [...PERMISOS_RECEPCION, 'cola.confirmar_urgencia', 'visitas.crear'];
 
 afterEach(() => {
   cleanup();
@@ -113,5 +113,21 @@ describe('Cola', () => {
 
     expect(await screen.findByRole('button', { name: 'Confirmar urgencia' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Descartar urgencia' })).toBeInTheDocument();
+  });
+
+  it('el veterinario puede iniciar la visita desde la cola', async () => {
+    vi.stubGlobal('fetch', crearFetch(PERMISOS_VETERINARIO));
+    renderizarCola();
+
+    expect(await screen.findByRole('button', { name: 'Iniciar visita' })).toBeInTheDocument();
+  });
+
+  it('recepción no ve el botón para iniciar la visita', async () => {
+    vi.stubGlobal('fetch', crearFetch(PERMISOS_RECEPCION));
+    renderizarCola();
+
+    await screen.findByText('Paciente Demo');
+
+    expect(screen.queryByRole('button', { name: 'Iniciar visita' })).toBeNull();
   });
 });
