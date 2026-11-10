@@ -300,6 +300,52 @@ export async function ejecutarSeedDemo() {
       }
     }
 
+    // Vacuna y estudio ficticios para el primer paciente, vinculados a su
+    // visita si existe. Se evita duplicar si el seed se corre dos veces.
+    if (primerPaciente) {
+      const { rows: visitaPaciente } = await cliente.query(
+        'SELECT id FROM visita WHERE paciente_id = $1 ORDER BY id LIMIT 1',
+        [primerPaciente.id],
+      );
+
+      const visitaId = visitaPaciente[0]?.id ?? null;
+
+      const { rowCount: vacunas } = await cliente.query(
+        'SELECT 1 FROM registro_vacuna WHERE paciente_id = $1 AND vacuna = $2',
+        [primerPaciente.id, 'Vacuna Demo Antirrábica'],
+      );
+
+      if (vacunas === 0) {
+        await cliente.query(
+          `INSERT INTO registro_vacuna (
+             paciente_id, visita_id, vacuna, lote, fecha_aplicacion,
+             fecha_proxima_dosis, aplicada_por, creado_por
+           )
+           VALUES ($1, $2, 'Vacuna Demo Antirrábica', 'DEMO-2026', current_date, current_date + 365, $3, $3)`,
+          [primerPaciente.id, visitaId, veterinarioId],
+        );
+      }
+
+      const { rowCount: estudios } = await cliente.query(
+        'SELECT 1 FROM registro_estudio WHERE paciente_id = $1 AND tipo_estudio = $2',
+        [primerPaciente.id, 'Estudio Demo de sangre'],
+      );
+
+      if (estudios === 0) {
+        await cliente.query(
+          `INSERT INTO registro_estudio (
+             paciente_id, visita_id, tipo_estudio, fecha_pedido, estado,
+             fecha_resultado, resultado_resumen, creado_por
+           )
+           VALUES (
+             $1, $2, 'Estudio Demo de sangre', current_date - 2, 'resultado_cargado',
+             current_date, 'Resultados ficticios dentro de los valores normales.', $3
+           )`,
+          [primerPaciente.id, visitaId, veterinarioId],
+        );
+      }
+    }
+
     await cliente.query('COMMIT');
     console.log('Seed demo completado con datos ficticios.');
   } catch (error) {
