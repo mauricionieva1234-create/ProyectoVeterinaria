@@ -68,6 +68,17 @@ const PACIENTES_DEMO = [
     nacimiento: null,
     color: 'Verde',
   },
+  // Misma mascota que Gamma pero de otro dueño: sirve para probar el buscador
+  // con nombres repetidos, un caso habitual en la veterinaria.
+  {
+    clienteDocumento: '90000003',
+    nombre: 'Paciente Demo Gamma',
+    especie: 'canino',
+    raza: 'Otra',
+    sexo: 'macho',
+    nacimiento: '2021-11-05',
+    color: 'Blanco',
+  },
 ];
 
 async function asegurarUsuarioDemo(cliente, { nombre, email, rol, matricula }) {
