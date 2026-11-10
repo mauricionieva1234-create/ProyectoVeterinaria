@@ -27,6 +27,7 @@ const CAMPOS_PACIENTE = `
   p.comentario,
   p.provisorio,
   p.ficha_incompleta,
+  p.foto_adjunto_id,
   p.creado_en,
   p.actualizado_en,
   p.creado_por,
@@ -203,6 +204,24 @@ export async function actualizarPaciente(id, datos, ejecutorId, cliente) {
   if (rows.length === 0) return null;
 
   return buscarPacientePorId(id, cliente);
+}
+
+// El veterinario completa la especie (y opcionalmente el nombre) al iniciar la
+// visita de un paciente creado por alta rápida.
+export async function completarProvisorio(id, { nombre, especieId }, ejecutorId, cliente) {
+  const { rows } = await ejecutar(
+    `UPDATE paciente
+     SET nombre = $2,
+         especie_id = $3,
+         raza_id = NULL,
+         actualizado_por = $4
+     WHERE id = $1
+     RETURNING id`,
+    [id, nombre, especieId, ejecutorId],
+    cliente,
+  );
+
+  return rows[0] ? buscarPacientePorId(id, cliente) : null;
 }
 
 export async function abrirHistorial(pacienteId, clienteId, ejecutorId, cliente) {

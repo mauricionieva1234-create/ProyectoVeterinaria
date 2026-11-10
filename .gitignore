@@ -6,6 +6,7 @@ coverage/
 !.env.example
 backups/
 uploads/
+tests/tmp-adjuntos/
 logs/
 *.log
 .DS_Store

@@ -28,6 +28,7 @@ export function aPacientePublico(fila) {
     comentario: fila.comentario,
     provisorio: fila.provisorio,
     fichaIncompleta: fila.ficha_incompleta,
+    fotoAdjuntoId: fila.foto_adjunto_id,
     creadoEn: fila.creado_en,
     actualizadoEn: fila.actualizado_en,
   };

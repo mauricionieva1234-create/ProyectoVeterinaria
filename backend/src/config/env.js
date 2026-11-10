@@ -19,6 +19,9 @@ const esquema = z
     ADMIN_PASSWORD: z.string().min(8).optional(),
     SEED_DEMO_PASSWORD: z.string().min(8).optional(),
     ZONA_HORARIA: z.string().min(1).default('America/Argentina/Tucuman'),
+    // Carpeta donde se guardan los adjuntos. Si no se indica, se usa
+    // backend/uploads/adjuntos, fuera de la carpeta pública del frontend.
+    ADJUNTOS_DIR: z.string().min(1).optional(),
   })
   .superRefine((valor, contexto) => {
     if (valor.NODE_ENV === 'test' && !valor.TEST_DATABASE_URL) {

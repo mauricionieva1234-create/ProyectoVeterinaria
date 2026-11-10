@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -7,6 +8,8 @@ export default defineConfig({
     env: {
       NODE_ENV: 'test',
       LOG_LEVEL: 'silent',
+      // Los archivos de prueba no se mezclan con los adjuntos reales.
+      ADJUNTOS_DIR: path.resolve('tests/tmp-adjuntos'),
     },
     globalSetup: ['./tests/config/globalSetup.js'],
     // Los tests comparten la base de test y la truncan entre archivos, así que
