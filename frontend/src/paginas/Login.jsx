@@ -46,15 +46,18 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 text-slate-900">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-teal-100 via-sky-50 to-violet-100 px-4 py-10 text-slate-900">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
+          <span className="mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-linear-to-br from-teal-600 to-emerald-500 text-xl font-bold text-white shadow-lg">
+            V
+          </span>
           <h1 className="text-2xl font-semibold tracking-tight text-teal-800">Veterinaria</h1>
           <p className="mt-1 text-sm text-slate-500">Sistema de gestión · Etapa 1</p>
         </div>
 
         <form
-          className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+          className="space-y-4 rounded-2xl border border-teal-100 bg-white p-6 shadow-xl"
           onSubmit={handleSubmit(alEnviar)}
           noValidate
         >

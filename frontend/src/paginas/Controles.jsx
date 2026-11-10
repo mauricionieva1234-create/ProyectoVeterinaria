@@ -12,6 +12,7 @@ import { FormularioAnular } from '../componentes/FormularioAnular.jsx';
 import { FormularioAviso } from '../componentes/FormularioAviso.jsx';
 import { FormularioControl } from '../componentes/FormularioControl.jsx';
 import { Modal } from '../componentes/Modal.jsx';
+import { EncabezadoPagina, Panel } from '../componentes/Panel.jsx';
 import { useSesion } from '../hooks/useSesion.js';
 import {
   ETIQUETAS_CANAL_AVISO,
@@ -225,12 +226,11 @@ export function Controles() {
 
   return (
     <section className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Controles</h1>
-        <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Recordatorios de hoy y de mañana, y controles vencidos para volver a contactar.
-        </p>
-      </div>
+      <EncabezadoPagina
+        tono="emerald"
+        titulo="Controles"
+        descripcion="Recordatorios de hoy y de mañana, y controles vencidos para volver a contactar."
+      />
 
       {errorLocal && (
         <p
@@ -252,10 +252,7 @@ export function Controles() {
         </p>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-3">
-          <h2 className="text-sm font-semibold text-slate-800">Hoy</h2>
-        </div>
+      <Panel tono="emerald" titulo="Hoy" cuerpoClassName="p-0">
         <ETabla
           controles={hoy}
           vacio="No hay controles agendados para hoy."
@@ -265,12 +262,9 @@ export function Controles() {
           onCerrar={cerrarControl}
           onAnular={setControlParaAnular}
         />
-      </div>
+      </Panel>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-3">
-          <h2 className="text-sm font-semibold text-slate-800">Mañana</h2>
-        </div>
+      <Panel tono="sky" titulo="Mañana" cuerpoClassName="p-0">
         <ETabla
           controles={manana}
           vacio="No hay controles agendados para mañana."
@@ -280,15 +274,14 @@ export function Controles() {
           onCerrar={cerrarControl}
           onAnular={setControlParaAnular}
         />
-      </div>
+      </Panel>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-3">
-          <h2 className="text-sm font-semibold text-slate-800">Vencidos para contactar</h2>
-          <p className="mt-0.5 text-xs text-slate-500">
-            Controles pendientes de días anteriores que quedaron como ausentes.
-          </p>
-        </div>
+      <Panel
+        tono="rose"
+        titulo="Vencidos para contactar"
+        descripcion="Controles pendientes de días anteriores que quedaron como ausentes."
+        cuerpoClassName="p-0"
+      >
         {vencidos.isPending && <p className="px-3 py-4 text-sm text-slate-600">Cargando...</p>}
         {vencidos.isError && (
           <p className="px-3 py-4 text-sm text-red-700" role="alert">
@@ -306,7 +299,7 @@ export function Controles() {
             onAnular={setControlParaAnular}
           />
         )}
-      </div>
+      </Panel>
 
       <Modal
         abierto={Boolean(controlAviso)}

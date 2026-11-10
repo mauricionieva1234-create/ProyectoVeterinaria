@@ -12,6 +12,8 @@ import { FormularioAltaRapida } from '../componentes/FormularioAltaRapida.jsx';
 import { FormularioIngreso } from '../componentes/FormularioIngreso.jsx';
 import { FormularioVisita } from '../componentes/FormularioVisita.jsx';
 import { Modal } from '../componentes/Modal.jsx';
+import { EncabezadoPagina, Panel } from '../componentes/Panel.jsx';
+import { claseBotonEncabezado, claseBotonEncabezadoSolido } from '../componentes/tonos.js';
 import { useSesion } from '../hooks/useSesion.js';
 import {
   ETIQUETAS_ESTADO,
@@ -177,44 +179,40 @@ export function Cola() {
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Cola del día</h1>
-          <p className="mt-1 text-sm text-slate-600">
+      <EncabezadoPagina
+        tono="amber"
+        titulo="Cola del día"
+        descripcion={
+          <>
             {data?.fecha ? formatearFecha(data.fecha) : 'Cargando fecha...'} · {ingresos.length}{' '}
             ingreso{ingresos.length === 1 ? '' : 's'}
-          </p>
-        </div>
+          </>
+        }
+      >
+        <Link to="/cola/sin-cerrar" className={claseBotonEncabezado}>
+          Ingresos sin cerrar
+        </Link>
 
-        <div className="flex flex-wrap gap-2">
-          <Link
-            to="/cola/sin-cerrar"
-            className="rounded border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+        {puede('cola.crear') && (
+          <button
+            type="button"
+            className={claseBotonEncabezado}
+            onClick={() => setModalIngreso(true)}
           >
-            Ingresos sin cerrar
-          </Link>
+            Agregar paciente
+          </button>
+        )}
 
-          {puede('cola.crear') && (
-            <button
-              type="button"
-              className="rounded border border-teal-700 px-3 py-2 text-sm font-medium text-teal-800 hover:bg-teal-50"
-              onClick={() => setModalIngreso(true)}
-            >
-              Agregar paciente
-            </button>
-          )}
-
-          {puede('pacientes.alta_rapida') && puede('cola.crear') && (
-            <button
-              type="button"
-              className="rounded bg-teal-700 px-3 py-2 text-sm font-medium text-white hover:bg-teal-800"
-              onClick={() => setModalAlta(true)}
-            >
-              Alta rápida
-            </button>
-          )}
-        </div>
-      </div>
+        {puede('pacientes.alta_rapida') && puede('cola.crear') && (
+          <button
+            type="button"
+            className={claseBotonEncabezadoSolido}
+            onClick={() => setModalAlta(true)}
+          >
+            Alta rápida
+          </button>
+        )}
+      </EncabezadoPagina>
 
       {errorAccion && (
         <p
@@ -225,107 +223,109 @@ export function Cola() {
         </p>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-            <tr>
-              <th className="px-3 py-3">Nº</th>
-              <th className="px-3 py-3">Paciente</th>
-              <th className="px-3 py-3">Dueño</th>
-              <th className="px-3 py-3">Especie</th>
-              <th className="px-3 py-3">Servicio</th>
-              <th className="px-3 py-3">Urgencia</th>
-              <th className="px-3 py-3">Estado</th>
-              <th className="px-3 py-3">Llegada</th>
-              <th className="px-3 py-3 text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {isPending && (
+      <Panel tono="amber" titulo="Ingresos del día" cuerpoClassName="p-0">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <thead className="bg-amber-100/70 text-left text-xs uppercase tracking-wide text-amber-900">
               <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-slate-500">
-                  Cargando la cola...
-                </td>
+                <th className="px-3 py-3">Nº</th>
+                <th className="px-3 py-3">Paciente</th>
+                <th className="px-3 py-3">Dueño</th>
+                <th className="px-3 py-3">Especie</th>
+                <th className="px-3 py-3">Servicio</th>
+                <th className="px-3 py-3">Urgencia</th>
+                <th className="px-3 py-3">Estado</th>
+                <th className="px-3 py-3">Llegada</th>
+                <th className="px-3 py-3 text-right">Acciones</th>
               </tr>
-            )}
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {isPending && (
+                <tr>
+                  <td colSpan={9} className="px-4 py-6 text-center text-slate-500">
+                    Cargando la cola...
+                  </td>
+                </tr>
+              )}
 
-            {isError && (
-              <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-red-700" role="alert">
-                  No se pudo cargar la cola: {error.message}
-                </td>
-              </tr>
-            )}
+              {isError && (
+                <tr>
+                  <td colSpan={9} className="px-4 py-6 text-center text-red-700" role="alert">
+                    No se pudo cargar la cola: {error.message}
+                  </td>
+                </tr>
+              )}
 
-            {!isPending && !isError && ingresos.length === 0 && (
-              <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-slate-500">
-                  Todavía no hay ingresos en la cola de hoy.
-                </td>
-              </tr>
-            )}
+              {!isPending && !isError && ingresos.length === 0 && (
+                <tr>
+                  <td colSpan={9} className="px-4 py-6 text-center text-slate-500">
+                    Todavía no hay ingresos en la cola de hoy.
+                  </td>
+                </tr>
+              )}
 
-            {ingresos.map((ingreso) => (
-              <tr key={ingreso.id} className="hover:bg-slate-50">
-                <td className="px-3 py-3 font-medium text-slate-700">{ingreso.numeroOrden}</td>
-                <td className="px-3 py-3">
-                  <Link
-                    to={`/pacientes/${ingreso.paciente.id}`}
-                    className="font-medium text-teal-800 hover:underline"
-                  >
-                    {ingreso.paciente.nombre}
-                  </Link>
-                  <p className="text-xs text-slate-500">
-                    {ingreso.paciente.codigoInterno}
-                    {ingreso.paciente.provisorio && (
-                      <span className="ml-1 rounded bg-amber-50 px-1.5 py-0.5 text-amber-800">
-                        provisorio
-                      </span>
-                    )}
-                  </p>
-                </td>
-                <td className="px-3 py-3">
-                  <Link
-                    to={`/clientes/${ingreso.cliente.id}`}
-                    className="text-slate-800 hover:underline"
-                  >
-                    {ingreso.cliente.nombreCompleto}
-                  </Link>
-                  <p className="text-xs text-slate-500">
-                    {ingreso.cliente.telefonoPrincipal ?? 'Sin teléfono'}
-                  </p>
-                </td>
-                <td className="px-3 py-3 text-slate-600">{ingreso.paciente.especieNombre}</td>
-                <td className="px-3 py-3 text-slate-600">
-                  {etiqueta(ETIQUETAS_SERVICIO, ingreso.servicio)}
-                </td>
-                <td className="px-3 py-3">
-                  <span
-                    className={[
-                      'rounded-full px-2 py-0.5 text-xs font-medium',
-                      claseUrgencia(ingreso.urgenciaEstado),
-                    ].join(' ')}
-                  >
-                    {etiqueta(ETIQUETAS_URGENCIA, ingreso.urgenciaEstado)}
-                  </span>
-                </td>
-                <td className="px-3 py-3">
-                  <span
-                    className={[
-                      'rounded-full px-2 py-0.5 text-xs font-medium',
-                      claseEstado(ingreso.estado),
-                    ].join(' ')}
-                  >
-                    {etiqueta(ETIQUETAS_ESTADO, ingreso.estado)}
-                  </span>
-                </td>
-                <td className="px-3 py-3 text-slate-600">{formatearHora(ingreso.horaLlegada)}</td>
-                <td className="px-3 py-3 text-right">{accionesDe(ingreso)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              {ingresos.map((ingreso) => (
+                <tr key={ingreso.id} className="hover:bg-slate-50">
+                  <td className="px-3 py-3 font-medium text-slate-700">{ingreso.numeroOrden}</td>
+                  <td className="px-3 py-3">
+                    <Link
+                      to={`/pacientes/${ingreso.paciente.id}`}
+                      className="font-medium text-teal-800 hover:underline"
+                    >
+                      {ingreso.paciente.nombre}
+                    </Link>
+                    <p className="text-xs text-slate-500">
+                      {ingreso.paciente.codigoInterno}
+                      {ingreso.paciente.provisorio && (
+                        <span className="ml-1 rounded bg-amber-50 px-1.5 py-0.5 text-amber-800">
+                          provisorio
+                        </span>
+                      )}
+                    </p>
+                  </td>
+                  <td className="px-3 py-3">
+                    <Link
+                      to={`/clientes/${ingreso.cliente.id}`}
+                      className="text-slate-800 hover:underline"
+                    >
+                      {ingreso.cliente.nombreCompleto}
+                    </Link>
+                    <p className="text-xs text-slate-500">
+                      {ingreso.cliente.telefonoPrincipal ?? 'Sin teléfono'}
+                    </p>
+                  </td>
+                  <td className="px-3 py-3 text-slate-600">{ingreso.paciente.especieNombre}</td>
+                  <td className="px-3 py-3 text-slate-600">
+                    {etiqueta(ETIQUETAS_SERVICIO, ingreso.servicio)}
+                  </td>
+                  <td className="px-3 py-3">
+                    <span
+                      className={[
+                        'rounded-full px-2 py-0.5 text-xs font-medium',
+                        claseUrgencia(ingreso.urgenciaEstado),
+                      ].join(' ')}
+                    >
+                      {etiqueta(ETIQUETAS_URGENCIA, ingreso.urgenciaEstado)}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3">
+                    <span
+                      className={[
+                        'rounded-full px-2 py-0.5 text-xs font-medium',
+                        claseEstado(ingreso.estado),
+                      ].join(' ')}
+                    >
+                      {etiqueta(ETIQUETAS_ESTADO, ingreso.estado)}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 text-slate-600">{formatearHora(ingreso.horaLlegada)}</td>
+                  <td className="px-3 py-3 text-right">{accionesDe(ingreso)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
 
       <Modal
         abierto={modalIngreso}

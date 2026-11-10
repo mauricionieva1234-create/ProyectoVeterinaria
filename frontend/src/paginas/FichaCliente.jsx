@@ -5,6 +5,8 @@ import { obtenerCliente, unirClientes } from '../api/clientes.js';
 import { FormularioCliente } from '../componentes/FormularioCliente.jsx';
 import { FormularioPaciente } from '../componentes/FormularioPaciente.jsx';
 import { Modal } from '../componentes/Modal.jsx';
+import { EncabezadoPagina, Panel } from '../componentes/Panel.jsx';
+import { claseBotonEncabezado, claseBotonEncabezadoSolido } from '../componentes/tonos.js';
 import { SelectorCliente } from '../componentes/SelectorCliente.jsx';
 import { useSesion } from '../hooks/useSesion.js';
 import { calcularEdad, formatearFecha } from '../utils/formato.js';
@@ -128,50 +130,39 @@ export function FichaCliente() {
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link to="/clientes" className="text-sm text-teal-800 hover:underline">
-            ← Volver a clientes
-          </Link>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-            {cliente.apellido}, {cliente.nombre}
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
+      <Link to="/clientes" className="text-sm font-medium text-sky-800 hover:underline">
+        ← Volver a clientes
+      </Link>
+      <EncabezadoPagina
+        tono="sky"
+        titulo={`${cliente.apellido}, ${cliente.nombre}`}
+        descripcion={
+          <>
             {cliente.tipoDocumento} {cliente.nroDocumento}
             {cliente.fichaIncompleta && (
-              <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
+              <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white">
                 Ficha incompleta
               </span>
             )}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
-            onClick={() => setModalEditar(true)}
-          >
-            Editar cliente
+          </>
+        }
+      >
+        <button type="button" className={claseBotonEncabezado} onClick={() => setModalEditar(true)}>
+          Editar cliente
+        </button>
+        <button
+          type="button"
+          className={claseBotonEncabezadoSolido}
+          onClick={() => setModalPaciente(true)}
+        >
+          Nuevo paciente
+        </button>
+        {esAdmin && !cliente.fusionadoEnClienteId && (
+          <button type="button" className={claseBotonEncabezado} onClick={() => setModalUnir(true)}>
+            Unir duplicado
           </button>
-          <button
-            type="button"
-            className="rounded bg-teal-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-800"
-            onClick={() => setModalPaciente(true)}
-          >
-            Nuevo paciente
-          </button>
-          {esAdmin && !cliente.fusionadoEnClienteId && (
-            <button
-              type="button"
-              className="rounded border border-amber-300 px-3 py-1.5 text-sm text-amber-800 hover:bg-amber-50"
-              onClick={() => setModalUnir(true)}
-            >
-              Unir duplicado
-            </button>
-          )}
-        </div>
-      </div>
+        )}
+      </EncabezadoPagina>
 
       {cliente.fusionadoEnClienteId && (
         <p className="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
@@ -184,8 +175,7 @@ export function FichaCliente() {
       )}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 lg:col-span-2">
-          <h2 className="text-sm font-semibold text-slate-800">Contacto</h2>
+        <Panel tono="sky" titulo="Contacto" className="lg:col-span-2" cuerpoClassName="space-y-4">
           <dl className="grid gap-4 sm:grid-cols-2">
             <Dato etiqueta="Teléfono principal">
               {cliente.telefonoPrincipal ?? '—'}
@@ -203,10 +193,9 @@ export function FichaCliente() {
               {cliente.fechaConsentimiento ? formatearFecha(cliente.fechaConsentimiento) : '—'}
             </Dato>
           </dl>
-        </div>
+        </Panel>
 
-        <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-sm font-semibold text-slate-800">Consentimiento</h2>
+        <Panel tono="sky" titulo="Consentimiento" cuerpoClassName="space-y-3">
           <p className="text-sm text-slate-700">
             Correo: {cliente.aceptaCorreo ? 'Acepta' : 'No acepta'}
           </p>
@@ -218,27 +207,24 @@ export function FichaCliente() {
             <br />
             Última edición: {formatearFecha(cliente.actualizadoEn)}
           </p>
-        </div>
+        </Panel>
       </div>
 
       {cliente.observaciones && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-sm font-semibold text-slate-800">Observaciones</h2>
-          <p className="mt-1 whitespace-pre-line text-sm text-slate-700">{cliente.observaciones}</p>
-        </div>
+        <Panel tono="sky" titulo="Observaciones">
+          <p className="whitespace-pre-line text-sm text-slate-700">{cliente.observaciones}</p>
+        </Panel>
       )}
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold tracking-tight">Pacientes</h2>
-          <p className="text-sm text-slate-600">
-            {pacientes.length} mascota{pacientes.length === 1 ? '' : 's'}
-          </p>
-        </div>
-
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <Panel
+        tono="sky"
+        titulo="Pacientes"
+        descripcion={`${pacientes.length} mascota${pacientes.length === 1 ? '' : 's'}`}
+        cuerpoClassName="p-0"
+      >
+        <div className="overflow-x-auto rounded-b-2xl bg-white">
           <table className="min-w-full divide-y divide-slate-200 text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+            <thead className="bg-sky-100/70 text-left text-xs uppercase tracking-wide text-sky-900">
               <tr>
                 <th className="px-4 py-3">Código</th>
                 <th className="px-4 py-3">Nombre</th>
@@ -297,7 +283,7 @@ export function FichaCliente() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Panel>
 
       <Modal abierto={modalEditar} titulo="Editar cliente" onCerrar={() => setModalEditar(false)}>
         <FormularioCliente

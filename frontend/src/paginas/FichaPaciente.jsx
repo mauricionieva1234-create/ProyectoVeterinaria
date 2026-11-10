@@ -7,6 +7,8 @@ import { FormularioPaciente } from '../componentes/FormularioPaciente.jsx';
 import { FormularioVisita } from '../componentes/FormularioVisita.jsx';
 import { HistorialClinico } from '../componentes/HistorialClinico.jsx';
 import { Modal } from '../componentes/Modal.jsx';
+import { EncabezadoPagina, Panel } from '../componentes/Panel.jsx';
+import { claseBotonEncabezado, claseBotonEncabezadoSolido } from '../componentes/tonos.js';
 import { SubirAdjunto } from '../componentes/SubirAdjunto.jsx';
 import { useSesion } from '../hooks/useSesion.js';
 import { calcularEdad, formatearFecha } from '../utils/formato.js';
@@ -92,62 +94,61 @@ export function FichaPaciente() {
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link
-            to={`/clientes/${paciente.clienteId}`}
-            className="text-sm text-teal-800 hover:underline"
-          >
-            ← Volver a la ficha del cliente
-          </Link>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">{paciente.nombre}</h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+      <Link
+        to={`/clientes/${paciente.clienteId}`}
+        className="text-sm font-medium text-violet-800 hover:underline"
+      >
+        ← Volver a la ficha del cliente
+      </Link>
+      <EncabezadoPagina
+        tono="violet"
+        titulo={paciente.nombre}
+        descripcion={
+          <>
             <span className="font-mono text-xs">{paciente.codigoInterno}</span>
-            <span>
+            <span className="ml-2">
               {paciente.especieNombre}
               {paciente.razaNombre ? ` · ${paciente.razaNombre}` : ''}
             </span>
             {paciente.provisorio && (
-              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
+              <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white">
                 Provisorio
               </span>
             )}
             {paciente.fichaIncompleta && (
-              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
+              <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white">
                 Ficha incompleta
               </span>
             )}
             {paciente.fechaDeceso && (
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+              <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white">
                 Fallecido
               </span>
             )}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {puedeCrearVisita && !paciente.fechaDeceso && (
-            <button
-              type="button"
-              className="rounded bg-teal-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-800"
-              onClick={() => setModalVisita(true)}
-            >
-              Nueva visita
-            </button>
-          )}
+          </>
+        }
+      >
+        {puedeCrearVisita && !paciente.fechaDeceso && (
           <button
             type="button"
-            className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
-            onClick={() => setModalEditar(true)}
+            className={claseBotonEncabezadoSolido}
+            onClick={() => setModalVisita(true)}
           >
-            Editar paciente
+            Nueva visita
           </button>
-        </div>
-      </div>
+        )}
+        <button type="button" className={claseBotonEncabezado} onClick={() => setModalEditar(true)}>
+          Editar paciente
+        </button>
+      </EncabezadoPagina>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 lg:col-span-2">
-          <h2 className="text-sm font-semibold text-slate-800">Datos del paciente</h2>
+        <Panel
+          tono="violet"
+          titulo="Datos del paciente"
+          className="lg:col-span-2"
+          cuerpoClassName="space-y-4"
+        >
           <dl className="grid gap-4 sm:grid-cols-2">
             <Dato etiqueta="Sexo">{ETIQUETAS_SEXO[paciente.sexo] ?? paciente.sexo}</Dato>
             <Dato etiqueta="Castrado">
@@ -172,11 +173,11 @@ export function FichaPaciente() {
             <Dato etiqueta="Código de chip">{paciente.chipCodigo ?? '—'}</Dato>
             <Dato etiqueta="Última edición">{formatearFecha(paciente.actualizadoEn)}</Dato>
           </dl>
-        </div>
+        </Panel>
 
-        <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-          <div className="space-y-2 border-b border-slate-200 pb-3">
-            <h2 className="text-sm font-semibold text-slate-800">Foto</h2>
+        <Panel tono="violet" cuerpoClassName="space-y-3">
+          <h2 className="text-sm font-semibold text-violet-950">Foto</h2>
+          <div className="space-y-2 border-b border-violet-200 pb-3">
             {paciente.fotoAdjuntoId ? (
               <img
                 src={urlDescargaAdjunto(paciente.fotoAdjuntoId)}
@@ -209,12 +210,14 @@ export function FichaPaciente() {
             )}
           </div>
 
-          <h2 className="text-sm font-semibold text-slate-800">Dueño actual</h2>
+          <h2 className="border-t border-violet-200 pt-3 text-sm font-semibold text-violet-950">
+            Dueño actual
+          </h2>
           {paciente.cliente ? (
             <>
               <Link
                 to={`/clientes/${paciente.cliente.id}`}
-                className="font-medium text-teal-800 hover:underline"
+                className="font-medium text-violet-800 hover:underline"
               >
                 {paciente.cliente.nombreCompleto}
               </Link>
@@ -225,21 +228,19 @@ export function FichaPaciente() {
           ) : (
             <p className="text-sm text-slate-600">Sin dueño registrado.</p>
           )}
-        </div>
+        </Panel>
       </div>
 
       {paciente.comentario && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-sm font-semibold text-slate-800">Comentario</h2>
-          <p className="mt-1 whitespace-pre-line text-sm text-slate-700">{paciente.comentario}</p>
-        </div>
+        <Panel tono="violet" titulo="Comentario">
+          <p className="whitespace-pre-line text-sm text-slate-700">{paciente.comentario}</p>
+        </Panel>
       )}
 
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">Historial de dueños</h2>
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <Panel tono="violet" titulo="Historial de dueños" cuerpoClassName="p-0">
+        <div className="overflow-x-auto rounded-b-2xl bg-white">
           <table className="min-w-full divide-y divide-slate-200 text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+            <thead className="bg-violet-100/70 text-left text-xs uppercase tracking-wide text-violet-900">
               <tr>
                 <th className="px-4 py-3">Cliente</th>
                 <th className="px-4 py-3">Desde</th>
@@ -266,7 +267,7 @@ export function FichaPaciente() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Panel>
 
       <HistorialClinico pacienteId={paciente.id} />
 

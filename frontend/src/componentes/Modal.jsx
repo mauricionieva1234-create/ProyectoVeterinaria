@@ -18,7 +18,7 @@ export function Modal({ abierto, titulo, onCerrar, children }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
       role="presentation"
       onMouseDown={(evento) => {
         if (evento.target === evento.currentTarget) {
@@ -27,18 +27,18 @@ export function Modal({ abierto, titulo, onCerrar, children }) {
       }}
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-xl"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-modal"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+        <div className="flex items-center justify-between bg-linear-to-r from-teal-600 to-emerald-500 px-5 py-3 text-white">
           <h2 id="titulo-modal" className="text-lg font-semibold">
             {titulo}
           </h2>
           <button
             type="button"
-            className="rounded p-1 text-2xl leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            className="rounded p-1 text-2xl leading-none text-white/80 hover:bg-white/20 hover:text-white"
             onClick={onCerrar}
             aria-label="Cerrar"
           >

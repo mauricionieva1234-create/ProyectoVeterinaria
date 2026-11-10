@@ -5,10 +5,10 @@ import { BuscadorGlobal } from './BuscadorGlobal.jsx';
 
 function claseEnlace({ isActive }) {
   return [
-    'rounded px-3 py-1.5 text-sm transition-colors',
+    'rounded-lg px-3 py-1.5 text-sm transition-colors',
     isActive
-      ? 'bg-teal-50 font-medium text-teal-800'
-      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+      ? 'bg-linear-to-r from-teal-100 to-emerald-100 font-medium text-teal-900 shadow-sm'
+      : 'text-slate-600 hover:bg-white hover:text-teal-800',
   ].join(' ');
 }
 
@@ -27,10 +27,17 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="min-h-screen bg-linear-to-br from-teal-50 via-slate-50 to-sky-50 text-slate-900">
+      <header className="sticky top-0 z-40 border-b border-teal-100/80 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
-          <NavLink to="/" end className="text-lg font-semibold tracking-tight text-teal-800">
+          <NavLink
+            to="/"
+            end
+            className="flex items-center gap-2 text-lg font-semibold tracking-tight text-teal-900"
+          >
+            <span className="flex size-8 items-center justify-center rounded-xl bg-linear-to-br from-teal-600 to-emerald-500 text-sm font-bold text-white shadow-sm">
+              V
+            </span>
             Veterinaria
           </NavLink>
 
@@ -89,7 +96,7 @@ export function Layout() {
 
             <button
               type="button"
-              className="rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-60"
               onClick={alSalir}
               disabled={cerrarSesion.isPending}
             >
@@ -97,6 +104,11 @@ export function Layout() {
             </button>
           </div>
         </div>
+
+        <div
+          aria-hidden="true"
+          className="h-1 bg-linear-to-r from-teal-500 via-sky-500 to-violet-500"
+        />
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8">

@@ -13,6 +13,8 @@ import { FormularioMedicacion } from '../componentes/FormularioMedicacion.jsx';
 import { FormularioVisita } from '../componentes/FormularioVisita.jsx';
 import { ListaAdjuntos } from '../componentes/ListaAdjuntos.jsx';
 import { Modal } from '../componentes/Modal.jsx';
+import { EncabezadoPagina, Panel } from '../componentes/Panel.jsx';
+import { claseBotonEncabezado } from '../componentes/tonos.js';
 import { SubirAdjunto } from '../componentes/SubirAdjunto.jsx';
 import { useSesion } from '../hooks/useSesion.js';
 import { ETIQUETAS_ESTADO_VISITA, etiqueta } from '../utils/etiquetasClinicas.js';
@@ -151,35 +153,36 @@ export function Visita() {
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link
-            to={`/pacientes/${visita.paciente.id}`}
-            className="text-sm text-teal-800 hover:underline"
-          >
-            ← Volver a la ficha del paciente
-          </Link>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-            Visita de {visita.paciente.nombre}
-          </h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+      <Link
+        to={`/pacientes/${visita.paciente.id}`}
+        className="text-sm font-medium text-indigo-800 hover:underline"
+      >
+        ← Volver a la ficha del paciente
+      </Link>
+      <EncabezadoPagina
+        tono="indigo"
+        titulo={`Visita de ${visita.paciente.nombre}`}
+        descripcion={
+          <>
             <span className="font-mono text-xs">{visita.paciente.codigoInterno}</span>
-            <EstadoVisita visita={visita} />
-          </p>
-        </div>
-
+            <span className="ml-2 inline-block align-middle">
+              <EstadoVisita visita={visita} />
+            </span>
+          </>
+        }
+      >
         {puedeAnular && !visita.anulado && (
           <button
             type="button"
-            className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+            className={claseBotonEncabezado}
             onClick={() => setModalAnular(true)}
           >
             Anular visita
           </button>
         )}
-      </div>
+      </EncabezadoPagina>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <Panel tono="indigo" cuerpoClassName="p-5">
         <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Dato etiqueta="Dueño">
             <Link to={`/clientes/${visita.cliente.id}`} className="text-teal-800 hover:underline">
@@ -208,7 +211,7 @@ export function Visita() {
             <Dato etiqueta="Motivo de anulación">{visita.motivoAnulacion ?? '—'}</Dato>
           )}
         </dl>
-      </div>
+      </Panel>
 
       {visita.anulado ? (
         <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
@@ -217,23 +220,21 @@ export function Visita() {
       ) : (
         <>
           {puedeEditar && (
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold text-slate-800">
-                Datos clínicos de la visita
-              </h2>
+            <Panel tono="violet" titulo="Datos clínicos de la visita">
               <FormularioVisita
                 key={visita.actualizadoEn ?? visita.id}
                 visita={visita}
                 paciente={visita.paciente}
                 onGuardada={() => queryClient.invalidateQueries({ queryKey: ['visita', id] })}
               />
-            </div>
+            </Panel>
           )}
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-slate-800">Medicación</h2>
-              {puedeEditar && (
+          <Panel
+            tono="emerald"
+            titulo="Medicación"
+            acciones={
+              puedeEditar && (
                 <button
                   type="button"
                   className={claseBotonPrincipal}
@@ -241,15 +242,15 @@ export function Visita() {
                 >
                   Agregar medicación
                 </button>
-              )}
-            </div>
-
+              )
+            }
+          >
             {medicacion.length === 0 ? (
               <p className="text-sm text-slate-500">No se indicó medicación.</p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-xl border border-emerald-200 bg-white">
                 <table className="min-w-full divide-y divide-slate-200 text-sm">
-                  <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                  <thead className="bg-emerald-100/70 text-left text-xs uppercase tracking-wide text-emerald-900">
                     <tr>
                       <th className="px-3 py-2">Medicamento</th>
                       <th className="px-3 py-2">Dosis</th>
@@ -306,12 +307,10 @@ export function Visita() {
                 </table>
               </div>
             )}
-          </div>
+          </Panel>
 
           {cerrada && (
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold text-slate-800">Notas posteriores</h2>
-
+            <Panel tono="amber" titulo="Notas posteriores">
               {notas.length === 0 ? (
                 <p className="text-sm text-slate-500">Todavía no hay notas agregadas.</p>
               ) : (
@@ -359,13 +358,14 @@ export function Visita() {
                   </div>
                 </form>
               )}
-            </div>
+            </Panel>
           )}
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold text-slate-800">Control posterior</h2>
-              {permisos.includes('controles.crear') && (
+          <Panel
+            tono="sky"
+            titulo="Control posterior"
+            acciones={
+              permisos.includes('controles.crear') && (
                 <button
                   type="button"
                   className={claseBotonPrincipal}
@@ -373,27 +373,26 @@ export function Visita() {
                 >
                   Crear control
                 </button>
-              )}
-            </div>
+              )
+            }
+          >
             <p className="text-sm text-slate-600">
               Los controles de este paciente se ven en la pestaña «Controles» de su ficha y en la
               pantalla general de controles.
             </p>
-          </div>
+          </Panel>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="mb-3 text-sm font-semibold text-slate-800">Adjuntos de la visita</h2>
+          <Panel tono="cyan" titulo="Adjuntos de la visita">
             {permisos.includes('adjuntos.crear') && (
               <div className="mb-3">
                 <SubirAdjunto pacienteId={visita.paciente.id} visitaId={visita.id} />
               </div>
             )}
             <ListaAdjuntos pacienteId={visita.paciente.id} visitaId={visita.id} />
-          </div>
+          </Panel>
 
           {versiones.length > 0 && (
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="mb-3 text-sm font-semibold text-slate-800">Historial de versiones</h2>
+            <Panel tono="slate" titulo="Historial de versiones">
               <ul className="space-y-2">
                 {versiones.map((version) => (
                   <li key={version.id} className="rounded border border-slate-200">
@@ -428,7 +427,7 @@ export function Visita() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </Panel>
           )}
         </>
       )}

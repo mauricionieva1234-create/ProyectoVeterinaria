@@ -29,7 +29,7 @@ const claseTab = (activo) =>
   [
     'rounded-t border-b-2 px-3 py-2 text-sm',
     activo
-      ? 'border-teal-700 font-medium text-teal-800'
+      ? 'border-indigo-600 bg-white/60 font-medium text-indigo-800'
       : 'border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-900',
   ].join(' ');
 
@@ -434,16 +434,18 @@ export function HistorialClinico({ pacienteId }) {
 
   if (tabs.length === 0) {
     return (
-      <p className="rounded border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
+      <p className="rounded-2xl border border-indigo-200 bg-indigo-50/70 px-4 py-6 text-sm text-slate-500">
         No tenés acceso al historial clínico de este paciente.
       </p>
     );
   }
 
   return (
-    <section className="space-y-3 rounded-lg border border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-4 pt-2">
-        <h2 className="text-lg font-semibold tracking-tight">Historial clínico</h2>
+    <section className="space-y-3 overflow-hidden rounded-2xl border border-indigo-200 bg-indigo-50/70 shadow-sm">
+      <div className="border-b border-indigo-200 bg-white/70 px-4 pt-2 backdrop-blur-sm">
+        <h2 className="pt-2 text-lg font-semibold tracking-tight text-indigo-950">
+          Historial clínico
+        </h2>
         <div className="mt-2 flex flex-wrap gap-1" role="tablist" aria-label="Historial clínico">
           {tabs.map((tab) => (
             <button

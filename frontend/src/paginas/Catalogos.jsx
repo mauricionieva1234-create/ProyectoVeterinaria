@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { crearEspecie, crearRaza, listarEspecies, listarRazas } from '../api/catalogos.js';
+import { EncabezadoPagina, Panel } from '../componentes/Panel.jsx';
 import { useSesion } from '../hooks/useSesion.js';
 
 const claseControl =
@@ -89,18 +90,14 @@ export function Catalogos() {
 
   return (
     <section className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Catálogos</h1>
-        <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Especies y razas disponibles para cargar pacientes. Cualquier usuario puede consultarlos;
-          solo el administrador agrega nuevos.
-        </p>
-      </div>
+      <EncabezadoPagina
+        tono="cyan"
+        titulo="Catálogos"
+        descripcion="Especies y razas disponibles para cargar pacientes. Cualquier usuario puede consultarlos; solo el administrador agrega nuevos."
+      />
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-lg font-semibold tracking-tight">Especies</h2>
-
+        <Panel tono="cyan" titulo="Especies" cuerpoClassName="space-y-4">
           {especies.isPending && <p className="text-sm text-slate-600">Cargando especies...</p>}
           {especies.isError && (
             <p className="text-sm text-red-700" role="alert">
@@ -146,11 +143,9 @@ export function Catalogos() {
               <MensajeError error={crearEspecieMut.error} />
             </form>
           )}
-        </div>
+        </Panel>
 
-        <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-lg font-semibold tracking-tight">Razas</h2>
-
+        <Panel tono="cyan" titulo="Razas" cuerpoClassName="space-y-4">
           <div>
             <label htmlFor="especie-razas" className="block text-sm font-medium text-slate-700">
               Especie
@@ -214,7 +209,7 @@ export function Catalogos() {
               <MensajeError error={crearRazaMut.error} />
             </form>
           )}
-        </div>
+        </Panel>
       </div>
     </section>
   );
