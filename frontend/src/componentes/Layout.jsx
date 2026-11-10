@@ -37,6 +37,12 @@ export function Layout() {
               Inicio
             </NavLink>
 
+            <NavLink to="/cola" className={claseEnlace}>
+              Cola del día
+            </NavLink>
+            <NavLink to="/cola/sin-cerrar" className={claseEnlace}>
+              Sin cerrar
+            </NavLink>
             <NavLink to="/clientes" className={claseEnlace}>
               Clientes
             </NavLink>
