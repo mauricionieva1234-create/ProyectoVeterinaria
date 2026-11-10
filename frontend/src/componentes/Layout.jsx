@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useLogout, useSesion } from '../hooks/useSesion.js';
 import { etiquetaRol } from '../utils/roles.js';
+import { BuscadorGlobal } from './BuscadorGlobal.jsx';
 
 function claseEnlace({ isActive }) {
   return [
@@ -77,6 +78,8 @@ export function Layout() {
           </nav>
 
           <div className="ml-auto flex items-center gap-3">
+            <BuscadorGlobal />
+
             {usuario && (
               <div className="text-right leading-tight">
                 <p className="text-sm font-medium text-slate-800">{usuario.nombreCompleto}</p>
