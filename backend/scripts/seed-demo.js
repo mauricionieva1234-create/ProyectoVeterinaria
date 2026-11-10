@@ -234,7 +234,7 @@ export async function ejecutarSeedDemo() {
       ingresos.set(paciente.id, creado.rows[0].id);
     }
 
-    // Una visita cerrada de ejemplo con su control y aviso.
+    // Una visita cerrada de ejemplo.
     const primerPaciente = pacientes[0];
 
     if (primerPaciente) {
@@ -244,7 +244,7 @@ export async function ejecutarSeedDemo() {
       );
 
       if (visitas.length === 0) {
-        const { rows: creada } = await cliente.query(
+        await cliente.query(
           `INSERT INTO visita (
              paciente_id, ingreso_id, veterinario_id, inicio_en, cierre_en, estado,
              motivo_consulta, anamnesis, temperatura_c, peso_kg, diagnostico, observaciones
@@ -256,47 +256,68 @@ export async function ejecutarSeedDemo() {
              38.5, 12.4,
              'Sin hallazgos relevantes en la revisión de demostración.',
              'Visita ficticia generada por seed:demo.'
-           )
-           RETURNING id`,
+           )`,
           [primerPaciente.id, ingresos.get(primerPaciente.id) ?? null, veterinarioId],
         );
+      }
 
-        const visitaId = creada[0].id;
+      // Controles de hoy y de mañana para que la pantalla de controles tenga
+      // datos visibles. El aviso queda sobre el control de hoy.
+      const { rows: visitaPaciente } = await cliente.query(
+        'SELECT id FROM visita WHERE paciente_id = $1 ORDER BY id LIMIT 1',
+        [primerPaciente.id],
+      );
 
-        const { rows: controles } = await cliente.query(
-          'SELECT id FROM control WHERE visita_origen_id = $1 LIMIT 1',
-          [visitaId],
+      const visitaId = visitaPaciente[0]?.id ?? null;
+
+      const controlesDemo = [
+        { dias: 0, franja: 'manana', motivo: 'Control de demostración de hoy' },
+        { dias: 1, franja: 'tarde', motivo: 'Control de demostración de mañana' },
+      ];
+
+      let controlHoyId = null;
+
+      for (const control of controlesDemo) {
+        const { rows: existentes } = await cliente.query(
+          `SELECT id FROM control
+           WHERE paciente_id = $1 AND fecha_control = current_date + $2::int
+           LIMIT 1`,
+          [primerPaciente.id, control.dias],
         );
 
-        let controlId = controles[0]?.id;
+        let controlId = existentes[0]?.id;
 
         if (!controlId) {
           const { rows: nuevoControl } = await cliente.query(
             `INSERT INTO control (
                paciente_id, visita_origen_id, fecha_control, franja, motivo, estado
              )
-             VALUES ($1, $2, current_date + 7, 'manana', 'Control de demostración', 'pendiente')
+             VALUES ($1, $2, current_date + $3::int, $4, $5, 'pendiente')
              RETURNING id`,
-            [primerPaciente.id, visitaId],
+            [primerPaciente.id, visitaId, control.dias, control.franja, control.motivo],
           );
 
           controlId = nuevoControl[0].id;
         }
 
-        const { rowCount: avisos } = await cliente.query(
-          'SELECT 1 FROM aviso_control WHERE control_id = $1',
-          [controlId],
-        );
-
-        if (avisos === 0) {
-          await cliente.query(
-            `INSERT INTO aviso_control (
-               control_id, canal, resultado, nota, realizado_por
-             )
-             VALUES ($1, 'llamada', 'avisado', 'Aviso de demostración', $2)`,
-            [controlId, recepcionId],
-          );
+        if (control.dias === 0) {
+          controlHoyId = controlId;
         }
+      }
+
+      const { rowCount: avisos } = await cliente.query(
+        'SELECT 1 FROM aviso_control WHERE control_id = $1',
+        [controlHoyId],
+      );
+
+      if (avisos === 0) {
+        await cliente.query(
+          `INSERT INTO aviso_control (
+             control_id, canal, resultado, nota, realizado_por
+           )
+           VALUES ($1, 'llamada', 'avisado', 'Aviso de demostración', $2)`,
+          [controlHoyId, recepcionId],
+        );
       }
     }
 
