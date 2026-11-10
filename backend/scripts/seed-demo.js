@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url';
 import { env } from '../src/config/env.js';
+import { hoyEnTucuman } from '../src/utils/fechas.js';
 import { hashearPassword } from '../src/utils/password.js';
 import { ejecutarSeed } from './seed.js';
 import { cerrarPool, obtenerPool } from './utilidades.js';
@@ -195,11 +196,12 @@ export async function ejecutarSeedDemo() {
     );
 
     const ingresos = new Map();
+    const fechaDia = hoyEnTucuman();
 
     for (const [indice, paciente] of pacientes.entries()) {
       const existente = await cliente.query(
-        'SELECT id FROM ingreso WHERE paciente_id = $1 AND fecha_dia = current_date LIMIT 1',
-        [paciente.id],
+        'SELECT id FROM ingreso WHERE paciente_id = $1 AND fecha_dia = $2::date LIMIT 1',
+        [paciente.id, fechaDia],
       );
 
       if (existente.rows.length > 0) {
@@ -208,7 +210,8 @@ export async function ejecutarSeedDemo() {
       }
 
       const { rows: orden } = await cliente.query(
-        'SELECT coalesce(max(numero_orden), 0) + 1 AS siguiente FROM ingreso WHERE fecha_dia = current_date',
+        'SELECT coalesce(max(numero_orden), 0) + 1 AS siguiente FROM ingreso WHERE fecha_dia = $1::date',
+        [fechaDia],
       );
 
       const urgente = indice === 0;
@@ -217,10 +220,11 @@ export async function ejecutarSeedDemo() {
         `INSERT INTO ingreso (
            paciente_id, fecha_dia, numero_orden, servicio, prioridad, urgencia_estado, estado
          )
-         VALUES ($1, current_date, $2, 'atencion_clinica', $3, $4, 'esperando')
+         VALUES ($1, $2::date, $3, 'atencion_clinica', $4, $5, 'esperando')
          RETURNING id`,
         [
           paciente.id,
+          fechaDia,
           orden[0].siguiente,
           urgente ? 'urgente' : 'normal',
           urgente ? 'posible' : 'sin_marca',
