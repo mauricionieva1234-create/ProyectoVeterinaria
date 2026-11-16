@@ -213,6 +213,21 @@ export function Visita() {
         </dl>
       </Panel>
 
+      {visita.ingreso?.estado === 'esperando_cobro' && !visita.anulado && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
+          <p className="font-medium">Pendiente de cobro</p>
+          <p className="mt-1">
+            La visita está cerrada y el ingreso espera el cobro en caja. Cuando el cobro queda
+            pagado, el ingreso pasa a atendido.
+          </p>
+          {permisos.includes('caja.ver') && (
+            <Link to="/caja" className="mt-2 inline-block font-medium text-amber-900 underline">
+              Ir a caja
+            </Link>
+          )}
+        </div>
+      )}
+
       {visita.anulado ? (
         <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
           La visita está anulada y no admite cambios.

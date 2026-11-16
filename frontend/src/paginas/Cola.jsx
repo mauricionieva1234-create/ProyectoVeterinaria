@@ -42,6 +42,7 @@ function claseEstado(estado) {
   if (estado === 'en_consulta') return 'bg-teal-50 text-teal-800';
   if (estado === 'esperando') return 'bg-sky-50 text-sky-800';
   if (estado === 'atendido') return 'bg-emerald-50 text-emerald-700';
+  if (estado === 'esperando_cobro') return 'bg-rose-50 text-rose-700';
   if (estado === 'sin_cerrar') return 'bg-amber-50 text-amber-800';
   return 'bg-slate-100 text-slate-600';
 }
@@ -85,6 +86,22 @@ export function Cola() {
   )?.error;
 
   function accionesDe(ingreso) {
+    // La visita cerrada espera el cobro en caja. No se marca atendido a mano:
+    // el ingreso pasa a atendido cuando el cobro queda pagado.
+    if (ingreso.estado === 'esperando_cobro') {
+      if (!puede('cobros.crear')) {
+        return <span className="text-slate-400">—</span>;
+      }
+
+      return (
+        <div className="flex items-center justify-end gap-1.5">
+          <Link to="/caja" className={claseBotonPrimario}>
+            Cobrar
+          </Link>
+        </div>
+      );
+    }
+
     const abierto = ['esperando', 'en_consulta'].includes(ingreso.estado);
 
     if (!abierto) {

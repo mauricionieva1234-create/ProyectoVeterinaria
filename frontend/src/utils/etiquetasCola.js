@@ -17,6 +17,7 @@ export const ETIQUETAS_URGENCIA = {
 export const ETIQUETAS_ESTADO = {
   esperando: 'Esperando',
   en_consulta: 'En consulta',
+  esperando_cobro: 'Esperando cobro',
   atendido: 'Atendido',
   se_retiro: 'Se retiró',
   cancelado: 'Cancelado',
