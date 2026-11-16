@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useLogout, useSesion } from '../hooks/useSesion.js';
 import { etiquetaRol } from '../utils/roles.js';
 import { BuscadorGlobal } from './BuscadorGlobal.jsx';
+import { AsistenteChat } from './AsistenteChat.jsx';
 
 function claseEnlace({ isActive }) {
   return [
@@ -118,6 +119,8 @@ export function Layout() {
       <main className="mx-auto max-w-6xl px-4 py-8 print:max-w-none print:px-0 print:py-0">
         <Outlet />
       </main>
+
+      {permisos.includes('asistente.usar') && <AsistenteChat />}
     </div>
   );
 }
