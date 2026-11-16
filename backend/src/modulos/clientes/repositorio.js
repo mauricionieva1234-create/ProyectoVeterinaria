@@ -48,8 +48,16 @@ function armarFiltros({ buscar, soloIncompletas }) {
     condiciones.push('c.ficha_incompleta = true');
   }
 
-  if (buscar) {
-    parametros.push(buscar);
+  // La búsqueda acepta «nombre apellido», «apellido, nombre» o cualquier orden,
+  // porque en el listado el cliente se ve como «apellido, nombre». Cada palabra
+  // tiene que aparecer en alguno de los campos buscables del mismo cliente.
+  const palabras = String(buscar ?? '')
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    .slice(0, 5);
+
+  for (const palabra of palabras) {
+    parametros.push(palabra);
     const n = parametros.length;
 
     condiciones.push(`(
@@ -58,7 +66,6 @@ function armarFiltros({ buscar, soloIncompletas }) {
       OR coalesce(c.telefono_alternativo, '') ILIKE '%' || $${n} || '%'
       OR fn_sin_tildes(c.nombre) LIKE '%' || fn_sin_tildes($${n}) || '%'
       OR fn_sin_tildes(c.apellido) LIKE '%' || fn_sin_tildes($${n}) || '%'
-      OR fn_sin_tildes(c.nombre || ' ' || c.apellido) LIKE '%' || fn_sin_tildes($${n}) || '%'
     )`);
   }
 

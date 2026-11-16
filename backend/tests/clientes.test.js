@@ -128,6 +128,20 @@ describe('clientes', () => {
     expect(lista.body.datos[0].nroDocumento).toMatch(/^\*\*\*\.\*\*\*\.\d{3}$/);
   });
 
+  it('busca por nombre y apellido en cualquier orden', async () => {
+    const porApellidoNombre = await agenteRecepcion.get('/api/clientes?buscar=Prueba%20Cliente');
+    const conComa = await agenteRecepcion.get('/api/clientes?buscar=Prueba%2C%20Cliente');
+
+    for (const respuesta of [porApellidoNombre, conComa]) {
+      expect(respuesta.status).toBe(200);
+      expect(
+        respuesta.body.datos.some(
+          (cliente) => cliente.nombre === 'Cliente' && cliente.apellido === 'Prueba',
+        ),
+      ).toBe(true);
+    }
+  });
+
   it('muestra el documento completo en la ficha y audita el dato sensible', async () => {
     const lista = await agenteVet.get('/api/clientes?buscar=90000001');
     const id = lista.body.datos[0].id;
