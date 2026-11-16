@@ -5,6 +5,8 @@ clínicas, controles y avisos manuales. La **etapa 1** incluye la base de datos,
 las migraciones, los seeds, el inicio de sesión con cookie, los permisos por rol,
 la auditoría, la administración de usuarios, clientes, pacientes, cola, visitas,
 registros clínicos, historia clínica completa y un asistente local de consultas.
+La **etapa 2** agrega el cobro de visitas, los pagos por medio, las deudas y el
+cierre diario de caja.
 
 La fuente de verdad del dominio es [`docs/modelo-de-datos.md`](docs/modelo-de-datos.md).
 
@@ -99,12 +101,14 @@ El seed base crea el administrador definido por `ADMIN_NOMBRE`, `ADMIN_EMAIL` y
 
 ## Roles y permisos
 
-- **Administrador:** todo, incluida la administración de usuarios y la auditoría.
+- **Administrador:** todo, incluida la administración de usuarios, la auditoría y
+  la anulación de cobros y pagos.
 - **Veterinario:** datos administrativos y todo lo clínico (visitas, medicación,
-  registros, controles y adjuntos).
-- **Recepción:** clientes, pacientes, cola, controles, avisos y adjuntos. Puede
-  leer la historia clínica completa y usar el asistente, pero no crear, editar ni
-  anular datos clínicos.
+  registros, controles y adjuntos). También cobra visitas, registra pagos y ve la
+  caja.
+- **Recepción:** clientes, pacientes, cola, controles, avisos, adjuntos, cobros,
+  pagos y caja. Puede leer la historia clínica completa y usar el asistente, pero
+  no crear, editar ni anular datos clínicos. Tampoco anula cobros ni pagos.
 
 El mapa de permisos vive en `backend/src/config/permisos.js`. El backend es la
 única autoridad; el frontend solo oculta opciones para comodidad.
@@ -164,7 +168,8 @@ veterinaria/
 ├── AGENTS.md              Mapa permanente para agentes y colaboradores
 ├── docs/
 │   ├── modelo-de-datos.md Fuente de verdad del dominio
-│   └── plan-fase-0-1.md   Plan aprobado de las primeras fases
+│   ├── plan-fase-0-1.md   Plan aprobado de las primeras fases
+│   └── plan-etapa-2.md    Plan aprobado de cobros y caja
 ├── backend/
 │   ├── migrations/        SQL numerado de node-pg-migrate
 │   ├── scripts/           Creación de bases, migraciones, seeds y backup
@@ -227,8 +232,11 @@ principales:
 - [x] **Fase 4:** visitas, registros clínicos, controles, avisos y adjuntos.
 - [x] **Historia clínica completa:** lectura, impresión y exportación auditada.
 - [x] **Asistente local:** consultas por reglas, con sesión y en solo lectura.
-- [ ] **Próximas etapas:** definir alcance con el equipo (cobros, reportes u otras
-      mejoras).
+- [x] **Etapa 2 (cobros y caja):** cobro por visita, pagos por medio, deudas,
+      anulación auditada y cierre diario imprimible.
+- [ ] **Próximas etapas:** lista de precios con historial, detalle por ítem,
+      venta de productos, stock y reportes.
 
 Los detalles de las próximas fases están en
-[`docs/plan-fase-0-1.md`](docs/plan-fase-0-1.md).
+[`docs/plan-fase-0-1.md`](docs/plan-fase-0-1.md) y el alcance implementado de
+cobros en [`docs/plan-etapa-2.md`](docs/plan-etapa-2.md).

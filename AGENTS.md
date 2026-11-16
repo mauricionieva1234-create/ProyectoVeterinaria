@@ -29,7 +29,7 @@ backend/
     middlewares/     autenticación, permisos, validación, errores
     modulos/         auth, usuarios, clientes, pacientes, cola, visitas,
                      registros, controles, adjuntos, historia, asistente,
-                     auditoria
+                     cobros, auditoria
     utils/
   tests/
 frontend/
@@ -82,6 +82,12 @@ La lógica de negocio vive en el servicio, nunca en las rutas.
     en solo lectura, pero solo veterinarios y admin crean, editan o anulan lo
     clínico. La entrega de la historia a un titular se audita con la acción
     `exportar`.
+11. Cobros: una visita cerrada se cobra una sola vez, con total manual. Al
+    cerrar la visita, el ingreso pasa a `esperando_cobro`; cuando el cobro queda
+    pagado, pasa a `atendido`. Sin cargo = total 0 con observación obligatoria.
+    Las deudas son cobros activos con saldo. Cobros y pagos se anulan con motivo
+    y solo admin puede hacerlo. El cierre del día se calcula y se imprime, no se
+    guarda.
 
 ## Seguridad
 

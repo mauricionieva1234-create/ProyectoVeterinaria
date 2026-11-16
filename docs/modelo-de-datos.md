@@ -1,12 +1,12 @@
-# Modelo de datos · Sistema de gestión veterinaria (Etapa 1)
+# Modelo de datos · Sistema de gestión veterinaria
 
 Borrador v1 · 8 de noviembre de 2026 · Motor de base de datos: PostgreSQL
 
-## 1. Alcance de la etapa 1
+## 1. Alcance de las etapas 1 y 2
 
-**Incluye:** alta de clientes y pacientes (con alta rápida para urgencias), cola de espera diaria con urgencias, visita clínica con historial de cambios, registros por tipo (vacunas, antiparasitarios, estudios, cirugías y controles), avisos manuales de control, fichas incompletas, unión de duplicados y permisos por rol.
+**Incluye:** alta de clientes y pacientes (con alta rápida para urgencias), cola de espera diaria con urgencias, visita clínica con historial de cambios, registros por tipo (vacunas, antiparasitarios, estudios, cirugías y controles), avisos manuales de control, fichas incompletas, unión de duplicados, permisos por rol, cobro de visitas, pagos por medio, deudas y cierre diario de caja.
 
-**Fuera de alcance:** cobros y ventas (etapa 2), caja chica (descartada), recordatorios automáticos por correo o WhatsApp, turnos, stock y reportes.
+**Fuera de alcance:** lista de precios con historial, detalle del cobro por ítem, venta de productos y stock, facturación fiscal, recordatorios automáticos por correo o WhatsApp, turnos y reportes.
 
 ## 2. Convenciones generales
 
@@ -22,6 +22,7 @@ Borrador v1 · 8 de noviembre de 2026 · Motor de base de datos: PostgreSQL
 - Una especie tiene muchas razas. Un paciente tiene una especie y, opcionalmente, una raza.
 - Un paciente tiene muchos ingresos a la cola, muchas visitas y muchos registros (vacunas, antiparasitarios, estudios, cirugías y controles).
 - Un ingreso a la cola puede generar una visita. Una visita tiene medicación, versiones, notas y adjuntos.
+- Una visita cerrada puede tener un cobro, y un cobro tiene muchos pagos. Las deudas son los cobros activos con saldo.
 - Un control nace de una visita y tiene muchos avisos.
 
 ## 4. Tablas
@@ -203,6 +204,12 @@ Todos llevan `paciente_id` (obligatorio) y `visita_id` (opcional, porque una vac
 
 **configuracion_franja_control**: `nombre` (manana o tarde), `hora_desde`, `hora_hasta`. Valores iniciales: mañana de 9:00 a 12:00, tarde de 17:00 a 20:00. Quedan como configuración y no escritos en el código.
 
+### 4.9 Cobros y pagos
+
+**cobro**: `visita_id` (una visita cerrada), `total numeric(12,2)`, `estado` (`pendiente`, `parcial`, `pagado`), `observaciones`, `anulado`, `motivo_anulacion`, `anulado_por`, `anulado_en`, timestamps y usuarios de creación/edición. Un índice único parcial permite un solo cobro activo por visita. El total puede ser 0 si la visita es sin cargo, y en ese caso exige observación.
+
+**pago**: `cobro_id`, `medio` (`efectivo`, `debito`, `credito`, `transferencia`), `monto numeric(12,2)`, `fecha`, `registrado_por`, `anulado`, `motivo_anulacion`, `anulado_por`, `anulado_en`, timestamps y usuarios de creación/edición. Un cobro puede tener varios pagos parciales. El saldo no se guarda: se calcula como total menos la suma de pagos activos.
+
 ## 5. Permisos por rol
 
 | Acción | Recepción | Veterinario | Admin |
@@ -216,6 +223,10 @@ Todos llevan `paciente_id` (obligatorio) y `visita_id` (opcional, porque una vac
 | Exportar o imprimir la historia clínica (queda registrado) | Sí | Sí | Sí |
 | Usar el asistente de consultas (solo lectura) | Sí | Sí | Sí |
 | Ver controles y gestionar avisos | Sí | Sí | Sí |
+| Cobrar visitas y registrar pagos | Sí | Sí | Sí |
+| Ver la caja y el cierre del día | Sí | Sí | Sí |
+| Corregir el total de un cobro (con motivo) | Sí | Sí | Sí |
+| Anular cobros y pagos (con motivo) | No | No | Sí |
 | Anular registros clínicos (con motivo) | No | Sí | Sí |
 | Unir clientes duplicados | No | No | Sí |
 | Crear especies y razas | No | No | Sí |
@@ -233,15 +244,17 @@ Todos llevan `paciente_id` (obligatorio) y `visita_id` (opcional, porque una vac
 8. **Anulación en lugar de borrado.** Los registros clínicos no se eliminan.
 9. **Historia clínica para el cliente.** Recepción puede ver la historia clínica completa en solo lectura, pero no crear, editar ni anular nada clínico. Cuando un titular la pide, se verifica su documento, se imprime o se exporta, y la entrega queda registrada en la auditoría (acción exportar, con a quién se entregó).
 10. **Asistente de consultas.** Es un chat local por reglas, sin IA externa, disponible solo con sesión iniciada y permiso `asistente.usar`. Responde con datos exactos de la base a partir de un término de búsqueda por mascota, titular, documento, teléfono o código `PAC-...`, y a pedidos como controles de hoy, de mañana o pendientes. Si hay varias coincidencias, muestra opciones para elegir. Es de solo lectura: no crea, edita, anula ni audita, no ejecuta el cierre automático de controles vencidos y no conserva memoria entre sesiones. El documento se muestra enmascarado y los datos clínicos respetan el permiso `historia.ver`.
+11. **Cobros y caja.** Cada visita cerrada se cobra una sola vez, con total manual y pagos parciales o totales por medio. Al cerrar la visita, el ingreso pasa a `esperando_cobro`; cuando el cobro queda pagado, pasa a `atendido`. Las deudas son los cobros activos con saldo. Un pago mal cargado se anula con motivo y el saldo vuelve a aparecer; solo el admin puede anular cobros y pagos. El cierre del día se calcula desde los pagos activos por medio y se imprime, sin guardarse. Quedan para más adelante la lista de precios, el detalle por ítem, la venta de productos y el stock.
 
-## 7. Cómo se engancha la etapa 2 (cobros)
+## 7. Etapa 2: cobros y caja
 
-Se agregan dos tablas, sin tocar las anteriores:
+Implementada en la migración `014_cobros.sql`, sin tocar las tablas anteriores:
 
-- **cobro**: `visita_id`, `total`, `estado` (pendiente, parcial, pagado).
-- **pago**: `cobro_id`, `medio` (efectivo, debito, credito, transferencia), `monto`, `fecha`, `registrado_por`.
+- **cobro**: un registro por visita cerrada, con total manual, estado (`pendiente`, `parcial`, `pagado`), observaciones y anulación lógica.
+- **pago**: uno o varios por cobro, con medio, monto, fecha y usuario que lo registró; también con anulación lógica.
+- **ingreso.estado**: suma `esperando_cobro` al circuito de la cola.
 
-También se suma el estado `esperando_cobro` en `ingreso.estado`. Las deudas surgen de los cobros no pagados por completo, y el cierre del día suma los pagos por medio. Más adelante: lista de precios con historial y detalle por ítem.
+El cierre del día usa la zona `America/Argentina/Tucumán` y suma solo pagos activos. No se persiste un cierre: se calcula y se imprime. Fuera de alcance: lista de precios con historial, detalle por ítem, venta de productos, stock y facturación fiscal.
 
 ## 8. Preguntas abiertas
 
