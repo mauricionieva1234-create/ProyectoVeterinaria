@@ -85,6 +85,9 @@ export function Clientes() {
               onChange={(evento) => setTextoBuscar(evento.target.value)}
               placeholder="Ej.: Demo o 90000001"
             />
+            <p className="mt-1 text-xs text-slate-500">
+              Podés escribir nombre y apellido en cualquier orden.
+            </p>
           </div>
           <button
             type="submit"

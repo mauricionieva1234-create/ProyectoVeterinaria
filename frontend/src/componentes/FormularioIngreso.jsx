@@ -17,9 +17,9 @@ const esquema = z.object({
 const claseControl =
   'mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600';
 
-export function FormularioIngreso({ onCreado, onCancelar }) {
+export function FormularioIngreso({ pacienteInicial = null, onCreado, onCancelar }) {
   const queryClient = useQueryClient();
-  const [paciente, setPaciente] = useState(null);
+  const [paciente, setPaciente] = useState(pacienteInicial);
   const [errorPaciente, setErrorPaciente] = useState(null);
 
   const {

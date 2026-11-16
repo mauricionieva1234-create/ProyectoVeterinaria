@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { obtenerCliente, unirClientes } from '../api/clientes.js';
 import { FormularioCliente } from '../componentes/FormularioCliente.jsx';
+import { FormularioIngreso } from '../componentes/FormularioIngreso.jsx';
 import { FormularioPaciente } from '../componentes/FormularioPaciente.jsx';
 import { Modal } from '../componentes/Modal.jsx';
 import { EncabezadoPagina, Panel } from '../componentes/Panel.jsx';
@@ -80,10 +81,14 @@ export function FichaCliente() {
   const queryClient = useQueryClient();
   const { data: sesion } = useSesion();
   const esAdmin = sesion?.usuario?.rol === 'admin';
+  const puedeAgregarACola = (sesion?.permisos ?? []).includes('cola.crear');
 
   const [modalEditar, setModalEditar] = useState(false);
   const [modalPaciente, setModalPaciente] = useState(false);
   const [modalUnir, setModalUnir] = useState(false);
+  const [pacienteParaCola, setPacienteParaCola] = useState(null);
+  const [eligiendoServicio, setEligiendoServicio] = useState(false);
+  const [avisoCola, setAvisoCola] = useState(null);
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ['cliente', id],
@@ -118,9 +123,26 @@ export function FichaCliente() {
     setModalEditar(false);
   }
 
-  function alCrearPaciente() {
+  function alCrearPaciente(paciente) {
     setModalPaciente(false);
     queryClient.invalidateQueries({ queryKey: ['cliente', id] });
+
+    // Después de cargar una mascota se ofrece sumarla a la cola del día. Si el
+    // usuario no puede crear ingresos o la mascota falleció, no se pregunta.
+    if (puedeAgregarACola && paciente && !paciente.fechaDeceso) {
+      setPacienteParaCola(paciente);
+    }
+  }
+
+  function cerrarModalCola() {
+    setPacienteParaCola(null);
+    setEligiendoServicio(false);
+  }
+
+  function alAgregarACola() {
+    const nombre = pacienteParaCola?.nombre ?? 'El paciente';
+    cerrarModalCola();
+    setAvisoCola(`${nombre} se agregó a la lista de espera.`);
   }
 
   function alUnir(conservadoId) {
@@ -169,6 +191,16 @@ export function FichaCliente() {
           Este cliente fue fusionado con{' '}
           <Link to={`/clientes/${cliente.fusionadoEnClienteId}`} className="font-medium underline">
             otro cliente
+          </Link>
+          .
+        </p>
+      )}
+
+      {avisoCola && (
+        <p className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          {avisoCola}{' '}
+          <Link to="/cola" className="font-medium underline" onClick={() => setAvisoCola(null)}>
+            Ver la cola del día
           </Link>
           .
         </p>
@@ -311,6 +343,45 @@ export function FichaCliente() {
         onCerrar={() => setModalUnir(false)}
       >
         <UnirCliente cliente={cliente} onUnido={alUnir} onCancelar={() => setModalUnir(false)} />
+      </Modal>
+
+      <Modal
+        abierto={Boolean(pacienteParaCola)}
+        titulo={eligiendoServicio ? 'Agregar a la lista de espera' : 'Lista de espera'}
+        onCerrar={cerrarModalCola}
+      >
+        {eligiendoServicio ? (
+          <FormularioIngreso
+            pacienteInicial={pacienteParaCola}
+            onCreado={alAgregarACola}
+            onCancelar={cerrarModalCola}
+          />
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-slate-700">
+              ¿Querés ingresar a{' '}
+              <span className="font-medium text-slate-900">{pacienteParaCola?.nombre}</span> a la
+              lista de espera de hoy?
+            </p>
+
+            <div className="flex justify-end gap-2 border-t border-slate-200 pt-4">
+              <button
+                type="button"
+                className="rounded border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                onClick={cerrarModalCola}
+              >
+                Ahora no
+              </button>
+              <button
+                type="button"
+                className="rounded bg-teal-700 px-4 py-2 text-sm font-medium text-white hover:bg-teal-800"
+                onClick={() => setEligiendoServicio(true)}
+              >
+                Sí, agregar
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </section>
   );

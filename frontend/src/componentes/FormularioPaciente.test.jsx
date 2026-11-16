@@ -23,6 +23,13 @@ function crearFetch() {
       return respuestaJson({ datos: [{ id: 2, especieId: 1, nombre: 'Mestizo' }] });
     }
 
+    if (String(url).startsWith('/api/clientes?')) {
+      return respuestaJson({
+        datos: [CLIENTE],
+        paginacion: { pagina: 1, limite: 8, total: 1 },
+      });
+    }
+
     if (String(url) === '/api/pacientes') {
       return respuestaJson({ paciente: { id: 9, clienteId: 5, nombre: 'Mascota de Prueba' } }, 201);
     }
@@ -42,7 +49,7 @@ function renderizarFormulario(props = {}) {
     <QueryClientProvider client={queryClient}>
       <FormularioPaciente
         paciente={props.paciente}
-        cliente={props.cliente ?? CLIENTE}
+        cliente={props.cliente === undefined ? CLIENTE : props.cliente}
         permitirCambioDueno={props.permitirCambioDueno}
         onGuardado={onGuardado}
         onCancelar={props.onCancelar ?? vi.fn()}
@@ -128,5 +135,15 @@ describe('FormularioPaciente', () => {
     expect(screen.getByText('Cliente Demo')).toBeInTheDocument();
     expect(screen.getByLabelText('Sexo')).toHaveValue('hembra');
     expect(screen.getByLabelText('Está castrado')).toBeChecked();
+  });
+
+  it('busca el dueño sin tener que tocar «Cambiar»', async () => {
+    vi.stubGlobal('fetch', crearFetch());
+    const usuario = userEvent.setup();
+    renderizarFormulario({ cliente: null, permitirCambioDueno: true });
+
+    await usuario.type(screen.getByLabelText('Buscar cliente'), 'Demo');
+
+    expect(await screen.findByRole('button', { name: /Cliente Demo/ })).toBeInTheDocument();
   });
 });
