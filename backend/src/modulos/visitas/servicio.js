@@ -8,6 +8,7 @@ import { aPacientePublico } from '../pacientes/servicio.js';
 import { buscarEspeciePorId } from '../catalogos/repositorio.js';
 import { buscarIngresoPorId, marcarEnConsulta, actualizarEstado } from '../cola/repositorio.js';
 import { aIngresoPublico } from '../cola/servicio.js';
+import { buscarCobroActivoPorVisita, sumarPagosActivos } from '../cobros/repositorio.js';
 import * as repositorio from './repositorio.js';
 
 function datosPaciente(fila) {
@@ -432,7 +433,7 @@ export async function cerrarVisita(id, { motivoConsulta }, ejecutor) {
       if (ingresoAntes) {
         const ingresoDespues = await actualizarEstado(
           actual.ingreso_id,
-          'atendido',
+          'esperando_cobro',
           ejecutor.id,
           cliente,
         );
@@ -448,7 +449,8 @@ export async function cerrarVisita(id, { motivoConsulta }, ejecutor) {
       }
     }
 
-    return aVisitaPublica(fila);
+    // Se relee la visita para devolver el estado actualizado del ingreso.
+    return aVisitaPublica(await repositorio.buscarVisitaPorId(id, cliente));
   });
 }
 
@@ -486,6 +488,20 @@ export async function anularVisita(id, { motivo }, ejecutor) {
   return conTransaccion(async (cliente) => {
     const actual = await cargarVisita(id, cliente);
     validarVisitaActiva(actual);
+
+    const cobro = await buscarCobroActivoPorVisita(id, cliente);
+
+    if (cobro) {
+      const pagos = await sumarPagosActivos(cobro.id, cliente);
+
+      if (pagos.cantidad > 0) {
+        throw errorConflicto(
+          'La visita tiene pagos registrados. Anulá primero los pagos y después el cobro',
+        );
+      }
+
+      throw errorConflicto('La visita tiene un cobro activo. Anulá el cobro antes de anularla');
+    }
 
     const fila = await repositorio.anularVisita(id, motivo, ejecutor.id, cliente);
     const antes = aVisitaPublica(actual);
