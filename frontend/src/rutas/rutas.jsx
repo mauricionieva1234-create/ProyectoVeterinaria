@@ -33,6 +33,7 @@ const Inicio = diferida(() => import('../paginas/Inicio.jsx'), 'Inicio');
 const Login = diferida(() => import('../paginas/Login.jsx'), 'Login');
 const NoAutorizado = diferida(() => import('../paginas/NoAutorizado.jsx'), 'NoAutorizado');
 const NoEncontrada = diferida(() => import('../paginas/NoEncontrada.jsx'), 'NoEncontrada');
+const Precios = diferida(() => import('../paginas/Precios.jsx'), 'Precios');
 const Usuarios = diferida(() => import('../paginas/Usuarios.jsx'), 'Usuarios');
 const Visita = diferida(() => import('../paginas/Visita.jsx'), 'Visita');
 const Visitas = diferida(() => import('../paginas/Visitas.jsx'), 'Visitas');
@@ -87,6 +88,14 @@ export const router = createBrowserRouter([
         element: (
           <RutaPermiso permiso="controles.ver">
             <Controles />
+          </RutaPermiso>
+        ),
+      },
+      {
+        path: 'precios',
+        element: (
+          <RutaPermiso permiso="precios.ver">
+            <Precios />
           </RutaPermiso>
         ),
       },

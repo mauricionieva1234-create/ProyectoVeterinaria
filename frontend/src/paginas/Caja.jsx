@@ -8,6 +8,7 @@ import {
   listarDeudas,
   listarPendientes,
   obtenerCaja,
+  obtenerCobro,
 } from '../api/cobros.js';
 import { FormularioAnular } from '../componentes/FormularioAnular.jsx';
 import { FormularioCobro } from '../componentes/FormularioCobro.jsx';
@@ -67,6 +68,7 @@ function EstadoCobro({ estado }) {
 // Tabla reutilizable para deudas y cobros del día, con acciones según permisos.
 function TablaCobros({
   cobros,
+  onDetalle,
   onPagar,
   onEditar,
   onAnular,
@@ -117,6 +119,11 @@ function TablaCobros({
               </td>
               <td className="px-3 py-2 text-right">
                 <div className="flex flex-wrap justify-end gap-1">
+                  {onDetalle && (
+                    <button type="button" className={claseBoton} onClick={() => onDetalle(cobro)}>
+                      Detalle
+                    </button>
+                  )}
                   {puedePagar && cobro.saldo > 0 && (
                     <button type="button" className={claseBotonPago} onClick={() => onPagar(cobro)}>
                       Registrar pago
@@ -142,6 +149,136 @@ function TablaCobros({
   );
 }
 
+// Detalle de solo lectura: muestra el snapshot de los ítems y todos los pagos,
+// incluidos los anulados, para poder reconstruir qué pasó con el cobro.
+function DetalleCobro({ cobro, cargando, error }) {
+  if (cargando) {
+    return <p className="text-sm text-slate-500">Cargando detalle del cobro...</p>;
+  }
+
+  if (error) {
+    return (
+      <p className="text-sm text-red-700" role="alert">
+        No se pudo cargar el detalle: {error.message}
+      </p>
+    );
+  }
+
+  if (!cobro) return null;
+
+  const items = cobro.items ?? [];
+  const pagos = cobro.pagos ?? [];
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+        <p className="font-medium text-slate-900">{cobro.paciente?.nombre}</p>
+        <p className="text-xs text-slate-500">
+          {cobro.paciente?.codigoInterno} · {cobro.cliente?.nombreCompleto}
+        </p>
+        <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+          <div>
+            <p className="text-slate-500 uppercase">Total</p>
+            <p className="font-medium text-slate-900">{formatearMoneda(cobro.total)}</p>
+          </div>
+          <div>
+            <p className="text-slate-500 uppercase">Pagado</p>
+            <p className="font-medium text-emerald-700">{formatearMoneda(cobro.pagado)}</p>
+          </div>
+          <div>
+            <p className="text-slate-500 uppercase">Saldo</p>
+            <p className="font-medium text-rose-700">{formatearMoneda(cobro.saldo)}</p>
+          </div>
+        </div>
+        <p className="mt-2">
+          <EstadoCobro estado={cobro.estado} />
+          {cobro.anulado && <span className="ml-2 text-xs text-rose-700">Cobro anulado</span>}
+        </p>
+      </div>
+
+      <section>
+        <h3 className="text-sm font-semibold text-slate-800">Ítems del cobro</h3>
+
+        {items.length === 0 ? (
+          <p className="mt-1 text-sm text-slate-500">
+            Cobro cargado con total manual, sin detalle por ítem.
+          </p>
+        ) : (
+          <div className="mt-2 overflow-x-auto rounded border border-slate-200 bg-white">
+            <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <thead className="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
+                <tr>
+                  <th className="px-3 py-2">Concepto</th>
+                  <th className="px-3 py-2 text-right">Cantidad</th>
+                  <th className="px-3 py-2 text-right">Unitario</th>
+                  <th className="px-3 py-2 text-right">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {items.map((item) => (
+                  <tr key={item.id}>
+                    <td className="px-3 py-2 text-slate-700">{item.nombre}</td>
+                    <td className="px-3 py-2 text-right text-slate-600">{item.cantidad}</td>
+                    <td className="px-3 py-2 text-right text-slate-600">
+                      {formatearMoneda(item.importeUnitario)}
+                    </td>
+                    <td className="px-3 py-2 text-right font-medium text-slate-800">
+                      {formatearMoneda(item.subtotal)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h3 className="text-sm font-semibold text-slate-800">Pagos</h3>
+
+        {pagos.length === 0 ? (
+          <p className="mt-1 text-sm text-slate-500">Todavía no tiene pagos registrados.</p>
+        ) : (
+          <div className="mt-2 overflow-x-auto rounded border border-slate-200 bg-white">
+            <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <thead className="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
+                <tr>
+                  <th className="px-3 py-2">Fecha</th>
+                  <th className="px-3 py-2">Medio</th>
+                  <th className="px-3 py-2 text-right">Monto</th>
+                  <th className="px-3 py-2">Registró</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pagos.map((pago) => (
+                  <tr key={pago.id} className={pago.anulado ? 'text-slate-400' : 'text-slate-700'}>
+                    <td className="px-3 py-2">
+                      {formatearFecha(pago.fecha)} {formatearHora(pago.fecha)}
+                    </td>
+                    <td className="px-3 py-2">{etiqueta(ETIQUETAS_MEDIO, pago.medio)}</td>
+                    <td className="px-3 py-2 text-right">{formatearMoneda(pago.monto)}</td>
+                    <td className="px-3 py-2">
+                      {pago.registradoPorNombre ?? '—'}
+                      {pago.anulado && <span className="ml-2 text-xs text-rose-700">Anulado</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {cobro.observaciones && (
+        <p className="rounded border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
+          <span className="font-medium text-slate-700">Observaciones: </span>
+          {cobro.observaciones}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function Caja() {
   const queryClient = useQueryClient();
   const { data: sesion } = useSesion();
@@ -154,6 +291,7 @@ export function Caja() {
   const [cobroPago, setCobroPago] = useState(null);
   const [cobroAnular, setCobroAnular] = useState(null);
   const [pagoAnular, setPagoAnular] = useState(null);
+  const [cobroDetalle, setCobroDetalle] = useState(null);
 
   const caja = useQuery({ queryKey: ['caja', fecha], queryFn: () => obtenerCaja(fecha) });
   const pendientes = useQuery({ queryKey: ['pendientes'], queryFn: listarPendientes });
@@ -164,6 +302,11 @@ export function Caja() {
   const cobros = useQuery({
     queryKey: ['cobros', fecha],
     queryFn: () => listarCobros({ desde: fecha, hasta: fecha, limite: 100 }),
+  });
+  const detalle = useQuery({
+    queryKey: ['cobro', cobroDetalle?.id],
+    queryFn: () => obtenerCobro(cobroDetalle.id),
+    enabled: Boolean(cobroDetalle),
   });
 
   function invalidar() {
@@ -352,6 +495,7 @@ export function Caja() {
         {!deudas.isPending && (
           <TablaCobros
             cobros={listaDeudas}
+            onDetalle={setCobroDetalle}
             onPagar={setCobroPago}
             onEditar={setCobroEdicion}
             onAnular={setCobroAnular}
@@ -372,6 +516,7 @@ export function Caja() {
         {!cobros.isPending && (
           <TablaCobros
             cobros={listaCobros}
+            onDetalle={setCobroDetalle}
             onPagar={setCobroPago}
             onEditar={setCobroEdicion}
             onAnular={setCobroAnular}
@@ -554,6 +699,20 @@ export function Caja() {
             cobro={cobroPago}
             onGuardado={() => setCobroPago(null)}
             onCancelar={() => setCobroPago(null)}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        abierto={Boolean(cobroDetalle)}
+        titulo="Detalle del cobro"
+        onCerrar={() => setCobroDetalle(null)}
+      >
+        {cobroDetalle && (
+          <DetalleCobro
+            cobro={detalle.data?.cobro}
+            cargando={detalle.isPending}
+            error={detalle.error}
           />
         )}
       </Modal>

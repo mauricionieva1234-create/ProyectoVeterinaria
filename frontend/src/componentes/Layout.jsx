@@ -68,6 +68,11 @@ export function Layout() {
                 Caja
               </NavLink>
             )}
+            {permisos.includes('precios.ver') && (
+              <NavLink to="/precios" className={claseEnlace}>
+                Precios
+              </NavLink>
+            )}
             {permisos.includes('visitas.ver') && (
               <NavLink to="/visitas" className={claseEnlace}>
                 Visitas
