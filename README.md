@@ -1,9 +1,10 @@
 # Sistema de gestión veterinaria
 
 Sistema web para una veterinaria pequeña: cola de espera diaria, urgencias, visitas
-clínicas, controles y avisos manuales. La **fase 1** agrega la base de datos,
-las migraciones, los seeds, el inicio de sesión con cookie, los permisos por
-rol, la auditoría y la administración de usuarios.
+clínicas, controles y avisos manuales. La **etapa 1** incluye la base de datos,
+las migraciones, los seeds, el inicio de sesión con cookie, los permisos por rol,
+la auditoría, la administración de usuarios, clientes, pacientes, cola, visitas,
+registros clínicos, historia clínica completa y un asistente local de consultas.
 
 La fuente de verdad del dominio es [`docs/modelo-de-datos.md`](docs/modelo-de-datos.md).
 
@@ -101,8 +102,9 @@ El seed base crea el administrador definido por `ADMIN_NOMBRE`, `ADMIN_EMAIL` y
 - **Administrador:** todo, incluida la administración de usuarios y la auditoría.
 - **Veterinario:** datos administrativos y todo lo clínico (visitas, medicación,
   registros, controles y adjuntos).
-- **Recepción:** clientes, pacientes y cola. No accede a datos clínicos ni a la
-  administración del sistema.
+- **Recepción:** clientes, pacientes, cola, controles, avisos y adjuntos. Puede
+  leer la historia clínica completa y usar el asistente, pero no crear, editar ni
+  anular datos clínicos.
 
 El mapa de permisos vive en `backend/src/config/permisos.js`. El backend es la
 única autoridad; el frontend solo oculta opciones para comodidad.
@@ -220,7 +222,13 @@ principales:
       ESLint, Prettier, tests y README.
 - [x] **Fase 1:** migraciones, seeds, autenticación con cookie, permisos por rol,
       auditoría y administración de usuarios.
-- [ ] Fases 2 a 7: ver `docs/plan-fase-0-1.md` y el prompt inicial.
+- [x] **Fase 2:** catálogos, clientes y pacientes.
+- [x] **Fase 3:** cola diaria, urgencias y alta rápida.
+- [x] **Fase 4:** visitas, registros clínicos, controles, avisos y adjuntos.
+- [x] **Historia clínica completa:** lectura, impresión y exportación auditada.
+- [x] **Asistente local:** consultas por reglas, con sesión y en solo lectura.
+- [ ] **Próximas etapas:** definir alcance con el equipo (cobros, reportes u otras
+      mejoras).
 
 Los detalles de las próximas fases están en
 [`docs/plan-fase-0-1.md`](docs/plan-fase-0-1.md).

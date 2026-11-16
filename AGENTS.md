@@ -28,7 +28,8 @@ backend/
     config/          entorno, conexión, logger, permisos
     middlewares/     autenticación, permisos, validación, errores
     modulos/         auth, usuarios, clientes, pacientes, cola, visitas,
-                     registros, controles, adjuntos, auditoria
+                     registros, controles, adjuntos, historia, asistente,
+                     auditoria
     utils/
   tests/
 frontend/
@@ -77,9 +78,10 @@ La lógica de negocio vive en el servicio, nunca en las rutas.
    registros, y marca `fusionado_en_cliente_id`.
 9. Nada clínico se borra: se anula con `anulado`, `motivo_anulacion`,
    `anulado_por` y `anulado_en`.
-10. Recepción puede leer la historia clínica completa, pero solo veterinarios y
-    admin crean, editan o anulan lo clínico. La entrega de la historia a un
-    titular se audita con la acción `exportar`.
+10. Recepción puede leer la historia clínica completa y usar el asistente local
+    en solo lectura, pero solo veterinarios y admin crean, editan o anulan lo
+    clínico. La entrega de la historia a un titular se audita con la acción
+    `exportar`.
 
 ## Seguridad
 
