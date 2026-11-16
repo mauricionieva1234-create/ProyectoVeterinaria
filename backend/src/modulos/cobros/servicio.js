@@ -85,6 +85,14 @@ export function aCobroPublico(fila) {
       nombreCompleto: `${fila.cliente_nombre} ${fila.cliente_apellido}`.trim(),
       telefonoPrincipal: fila.telefono_principal,
     },
+    items: (fila.items ?? []).map((item) => ({
+      id: item.id,
+      precioId: item.precio_id,
+      nombre: item.nombre,
+      cantidad: item.cantidad,
+      importeUnitario: aNumero(item.importe_unitario),
+      subtotal: aNumero(item.subtotal),
+    })),
   };
 }
 
@@ -112,6 +120,51 @@ function aPendientePublico(fila) {
       telefonoPrincipal: fila.telefono_principal,
     },
   };
+}
+
+function normalizarItems(items) {
+  return items.map((item) => ({
+    precioId: item.precioId ?? null,
+    nombre: item.nombre.trim(),
+    cantidad: item.cantidad,
+    importeUnitario: redondear(item.importeUnitario),
+  }));
+}
+
+// El subtotal se redondea por línea y el total suma esos subtotales. Así el
+// total del cobro coincide siempre con lo que muestra el detalle en la base.
+function totalDeItems(items) {
+  const subtotales = items.map((item) => redondear(item.cantidad * item.importeUnitario));
+  return redondear(subtotales.reduce((suma, valor) => suma + valor, 0));
+}
+
+async function validarPreciosDeItems(items, cliente) {
+  const ids = [...new Set(items.map((item) => item.precioId).filter((id) => id !== null))];
+
+  if (ids.length === 0) return;
+
+  const encontrados = new Set(await repositorio.preciosExistentes(ids, cliente));
+  const faltantes = ids.filter((id) => !encontrados.has(id));
+
+  if (faltantes.length > 0) {
+    throw errorDatosInvalidos([
+      {
+        campo: 'items',
+        mensaje: 'Uno de los precios elegidos ya no existe. Volvé a cargar el detalle.',
+      },
+    ]);
+  }
+}
+
+function validarTotalSinCargo(total, observaciones) {
+  if (total === 0 && (!observaciones || observaciones.trim().length < 3)) {
+    throw errorDatosInvalidos([
+      {
+        campo: 'observaciones',
+        mensaje: 'Indicá una observación para un cobro sin cargo',
+      },
+    ]);
+  }
 }
 
 function estadoSegun(total, pagado) {
@@ -264,16 +317,14 @@ export async function crearCobro(datos, ejecutor) {
       throw errorConflicto('La visita ya tiene un cobro activo');
     }
 
-    const total = redondear(datos.total);
+    const items = datos.items !== undefined ? normalizarItems(datos.items) : null;
+    const total = items ? totalDeItems(items) : redondear(datos.total);
     const observaciones = datos.observaciones?.trim() || null;
 
-    if (total === 0 && !observaciones) {
-      throw errorDatosInvalidos([
-        {
-          campo: 'observaciones',
-          mensaje: 'Indicá una observación para un cobro sin cargo',
-        },
-      ]);
+    validarTotalSinCargo(total, observaciones);
+
+    if (items) {
+      await validarPreciosDeItems(items, cliente);
     }
 
     const estado = total === 0 ? 'pagado' : 'pendiente';
@@ -287,6 +338,10 @@ export async function crearCobro(datos, ejecutor) {
       ejecutor.id,
       cliente,
     );
+
+    if (items) {
+      await repositorio.reemplazarItemsCobro(fila, items, ejecutor.id, cliente);
+    }
 
     const cobro = await cargarCobro(fila, cliente);
     await auditarCobro(cobro, 'crear', null, ejecutor, cliente);
@@ -308,7 +363,14 @@ export async function actualizarCobro(id, datos, ejecutor) {
     }
 
     const pagado = redondear((await repositorio.sumarPagosActivos(id, cliente)).pagado);
-    const total = redondear(datos.total);
+    const itemsActuales = Array.isArray(cobro.items) ? cobro.items : [];
+    const items = datos.items !== undefined ? normalizarItems(datos.items) : null;
+
+    if (!items && itemsActuales.length > 0) {
+      throw errorConflicto('Este cobro tiene detalle por ítem: editá los ítems en lugar del total');
+    }
+
+    const total = items ? totalDeItems(items) : redondear(datos.total);
 
     if (total < pagado) {
       throw errorConflicto('El total no puede quedar por debajo de lo ya pagado');
@@ -316,9 +378,20 @@ export async function actualizarCobro(id, datos, ejecutor) {
 
     const observaciones =
       datos.observaciones !== undefined ? datos.observaciones?.trim() || null : cobro.observaciones;
+
+    validarTotalSinCargo(total, observaciones);
+
+    if (items) {
+      await validarPreciosDeItems(items, cliente);
+    }
+
     const estado = estadoSegun(total, pagado);
 
     await repositorio.actualizarCobro(id, { total, estado, observaciones }, ejecutor.id, cliente);
+
+    if (items) {
+      await repositorio.reemplazarItemsCobro(id, items, ejecutor.id, cliente);
+    }
 
     const actualizado = await cargarCobro(id, cliente);
     await registrarAuditoria(

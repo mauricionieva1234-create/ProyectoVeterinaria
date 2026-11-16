@@ -37,7 +37,8 @@ const CAMPOS_COBRO = `
   cl.telefono_principal,
   coalesce(pg.pagado, 0) AS pagado,
   coalesce(pg.cantidad_pagos, 0) AS cantidad_pagos,
-  (c.total - coalesce(pg.pagado, 0)) AS saldo
+  (c.total - coalesce(pg.pagado, 0)) AS saldo,
+  it.items
 `;
 
 const JOINS_COBRO = `
@@ -51,6 +52,24 @@ const JOINS_COBRO = `
     FROM pago
     WHERE cobro_id = c.id AND anulado = false
   ) pg ON true
+  LEFT JOIN LATERAL (
+    SELECT coalesce(
+      json_agg(
+        json_build_object(
+          'id', ci.id::text,
+          'precio_id', ci.precio_id::text,
+          'nombre', ci.nombre,
+          'cantidad', ci.cantidad,
+          'importe_unitario', ci.importe_unitario,
+          'subtotal', ci.subtotal
+        )
+        ORDER BY ci.id
+      ),
+      '[]'::json
+    ) AS items
+    FROM cobro_item ci
+    WHERE ci.cobro_id = c.id
+  ) it ON true
 `;
 
 const CAMPOS_PAGO = `
@@ -338,6 +357,35 @@ export async function sumarPagosActivos(cobroId, cliente) {
   return rows[0];
 }
 
+// Devuelve los ids de precio que existen. El servicio compara contra los ids
+// pedidos para rechazar un ítem con un precio inventado antes de tocar la base.
+export async function preciosExistentes(precioIds, cliente) {
+  if (precioIds.length === 0) return [];
+
+  const { rows } = await ejecutar(
+    'SELECT id FROM precio WHERE id = ANY($1::bigint[])',
+    [precioIds],
+    cliente,
+  );
+  return rows.map((fila) => Number(fila.id));
+}
+
+// El detalle se reemplaza completo dentro de la transacción del cobro. La
+// auditoría guarda el antes y el después, así que no se pierde el historial.
+export async function reemplazarItemsCobro(cobroId, items, ejecutorId, cliente) {
+  await ejecutar('DELETE FROM cobro_item WHERE cobro_id = $1', [cobroId], cliente);
+
+  for (const item of items) {
+    await ejecutar(
+      `INSERT INTO cobro_item (
+         cobro_id, precio_id, nombre, cantidad, importe_unitario, creado_por, actualizado_por
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+      [cobroId, item.precioId, item.nombre, item.cantidad, item.importeUnitario, ejecutorId],
+      cliente,
+    );
+  }
+}
 export async function actualizarEstadoCobro(id, estado, ejecutorId, cliente) {
   await ejecutar(
     `UPDATE cobro
