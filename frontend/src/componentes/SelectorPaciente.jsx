@@ -21,7 +21,9 @@ export function SelectorPaciente({ paciente, onSeleccionar, error }) {
   const { data, isFetching, isError } = useQuery({
     queryKey: ['pacientes', 'selector', texto],
     queryFn: () => listarPacientes({ buscar: texto.trim(), limite: 8 }),
-    enabled: buscando && texto.trim().length >= 2,
+    // La búsqueda se habilita con el texto, sin esperar a que se pise "Cambiar":
+    // el selector se usa también la primera vez que se agrega un paciente.
+    enabled: texto.trim().length >= 2,
     staleTime: 30 * 1000,
   });
 
@@ -78,7 +80,7 @@ export function SelectorPaciente({ paciente, onSeleccionar, error }) {
         </p>
       )}
 
-      {buscando && texto.trim().length >= 2 && !isFetching && resultados.length === 0 && (
+      {texto.trim().length >= 2 && !isFetching && resultados.length === 0 && (
         <p className="text-sm text-slate-500">No se encontraron pacientes.</p>
       )}
 
