@@ -28,7 +28,8 @@
     "db:reset": "npm run db:reset -w backend",
     "seed": "npm run seed -w backend",
     "seed:demo": "npm run seed:demo -w backend",
-    "db:backup": "npm run db:backup -w backend"
+    "db:backup": "npm run db:backup -w backend",
+    "db:backup:verificar": "npm run db:backup:verificar -w backend"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

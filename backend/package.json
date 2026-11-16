@@ -17,7 +17,8 @@
     "db:reset": "node scripts/reset.js",
     "seed": "node scripts/seed.js",
     "seed:demo": "node scripts/seed-demo.js",
-    "db:backup": "node scripts/backup.js"
+    "db:backup": "node scripts/backup.js",
+    "db:backup:verificar": "node scripts/verificar-backup.js"
   },
   "dependencies": {
     "bcryptjs": "3.0.3",
