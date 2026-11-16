@@ -36,7 +36,7 @@ const INGRESO = {
   },
 };
 
-function crearFetch(permisos) {
+function crearFetch(permisos, ingresos = [INGRESO]) {
   return vi.fn(async (url) => {
     const ruta = String(url);
 
@@ -48,7 +48,22 @@ function crearFetch(permisos) {
     }
 
     if (ruta === '/api/cola') {
-      return respuestaJson({ fecha: '2026-11-10', ingresos: [INGRESO] });
+      return respuestaJson({ fecha: '2026-11-10', ingresos });
+    }
+
+    if (ruta.startsWith('/api/pacientes?')) {
+      return respuestaJson({
+        datos: [
+          {
+            id: 10,
+            nombre: 'Paciente Demo',
+            codigoInterno: 'PAC-000010',
+            especieNombre: 'canino',
+            provisorio: false,
+          },
+        ],
+        paginacion: { pagina: 1, limite: 8, total: 1 },
+      });
     }
 
     throw new Error(`URL inesperada en el test: ${url}`);
@@ -136,5 +151,30 @@ describe('Cola', () => {
     await screen.findByText('Paciente Demo');
 
     expect(screen.queryByRole('button', { name: 'Iniciar visita' })).toBeNull();
+  });
+
+  it('muestra el estado esperando cobro y el acceso a caja', async () => {
+    const enCaja = { ...INGRESO, id: 2, numeroOrden: 2, estado: 'esperando_cobro' };
+
+    vi.stubGlobal('fetch', crearFetch([...PERMISOS_RECEPCION, 'cobros.crear'], [enCaja]));
+    renderizarCola();
+
+    expect(await screen.findByText('Esperando cobro')).toBeInTheDocument();
+
+    const enlace = screen.getByRole('link', { name: 'Cobrar' });
+    expect(enlace).toHaveAttribute('href', '/caja');
+    expect(screen.queryByRole('button', { name: 'Iniciar visita' })).toBeNull();
+  });
+
+  it('permite buscar un paciente al agregar un ingreso a la cola', async () => {
+    vi.stubGlobal('fetch', crearFetch(PERMISOS_RECEPCION));
+    renderizarCola();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Agregar paciente' }));
+    fireEvent.change(await screen.findByLabelText('Buscar paciente'), {
+      target: { value: 'Demo' },
+    });
+
+    expect(await screen.findByRole('button', { name: /Paciente Demo/ })).toBeInTheDocument();
   });
 });
