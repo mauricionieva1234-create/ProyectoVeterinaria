@@ -403,6 +403,207 @@ describe('cobros y caja', () => {
     expect(await contarAuditoriaAccion('cobro', cobroId, 'editar')).toBe(2);
   });
 
+  it('cobra con ítems, calcula el total y conserva el snapshot del precio', async () => {
+    const precio = await agenteAdmin.post('/api/precios').send({
+      nombre: 'Consulta detallada ficticia',
+      importe: 10000,
+    });
+    expect(precio.status).toBe(201);
+
+    const precioId = precio.body.precio.id;
+    const { visitaId } = await crearVisitaCerrada({ nombre: 'Paciente Detalle' });
+
+    const creado = await agenteRecepcion.post('/api/cobros').send({
+      visitaId,
+      items: [
+        {
+          precioId,
+          nombre: 'Consulta detallada ficticia',
+          cantidad: 1,
+          importeUnitario: 10000,
+        },
+        {
+          precioId: null,
+          nombre: 'Concepto manual ficticio',
+          cantidad: 2,
+          importeUnitario: 2500,
+        },
+        {
+          precioId,
+          nombre: 'Consulta con ajuste ficticio',
+          cantidad: 1,
+          importeUnitario: 9500,
+        },
+      ],
+    });
+
+    expect(creado.status).toBe(201);
+    expect(creado.body.cobro.total).toBe(24500);
+    expect(creado.body.cobro.estado).toBe('pendiente');
+    expect(creado.body.cobro.items).toHaveLength(3);
+    expect(creado.body.cobro.items.map((item) => item.subtotal)).toEqual([10000, 5000, 9500]);
+    expect(creado.body.cobro.items[0]).toMatchObject({
+      precioId,
+      nombre: 'Consulta detallada ficticia',
+      cantidad: 1,
+      importeUnitario: 10000,
+      subtotal: 10000,
+    });
+
+    // Cambiar la lista no altera un cobro ya generado.
+    const actualizado = await agenteAdmin.patch(`/api/precios/${precioId}`).send({
+      importe: 12000,
+      motivo: 'Ajuste ficticio de la lista',
+    });
+    expect(actualizado.status).toBe(200);
+
+    const detalle = await agenteRecepcion.get(`/api/cobros/${creado.body.cobro.id}`);
+    expect(detalle.status).toBe(200);
+    expect(detalle.body.cobro.total).toBe(24500);
+    expect(detalle.body.cobro.items[0].importeUnitario).toBe(10000);
+    expect(detalle.body.cobro.items[0].nombre).toBe('Consulta detallada ficticia');
+  });
+
+  it('edita el detalle y no permite bajar el total de lo ya pagado', async () => {
+    const precio = await agenteAdmin.post('/api/precios').send({
+      nombre: 'Control detallado ficticio',
+      importe: 5000,
+    });
+    const precioId = precio.body.precio.id;
+    const { ingresoId, visitaId } = await crearVisitaCerrada({
+      nombre: 'Paciente Edición Detalle',
+    });
+
+    const creado = await agenteRecepcion.post('/api/cobros').send({
+      visitaId,
+      items: [
+        {
+          precioId,
+          nombre: 'Control detallado ficticio',
+          cantidad: 1,
+          importeUnitario: 5000,
+        },
+      ],
+    });
+    const cobroId = creado.body.cobro.id;
+    expect(creado.body.cobro.total).toBe(5000);
+
+    await agenteRecepcion.post(`/api/cobros/${cobroId}/pagos`).send({
+      medio: 'efectivo',
+      monto: 3000,
+    });
+
+    const soloTotal = await agenteRecepcion.patch(`/api/cobros/${cobroId}`).send({
+      total: 8000,
+      motivoCambio: 'Intento de editar sin el detalle',
+    });
+    expect(soloTotal.status).toBe(409);
+
+    const ampliado = await agenteRecepcion.patch(`/api/cobros/${cobroId}`).send({
+      items: [
+        {
+          precioId,
+          nombre: 'Control detallado ficticio',
+          cantidad: 1,
+          importeUnitario: 5000,
+        },
+        {
+          precioId: null,
+          nombre: 'Estudio ficticio',
+          cantidad: 1,
+          importeUnitario: 4000,
+        },
+      ],
+      motivoCambio: 'Se agregó un estudio ficticio al detalle',
+    });
+
+    expect(ampliado.status).toBe(200);
+    expect(ampliado.body.cobro.total).toBe(9000);
+    expect(ampliado.body.cobro.saldo).toBe(6000);
+    expect(ampliado.body.cobro.estado).toBe('parcial');
+    expect(ampliado.body.cobro.items).toHaveLength(2);
+
+    const menor = await agenteRecepcion.patch(`/api/cobros/${cobroId}`).send({
+      items: [
+        {
+          precioId: null,
+          nombre: 'Ajuste ficticio',
+          cantidad: 1,
+          importeUnitario: 2000,
+        },
+      ],
+      motivoCambio: 'Ajuste ficticio por debajo de lo pagado',
+    });
+    expect(menor.status).toBe(409);
+
+    const saldado = await agenteRecepcion.patch(`/api/cobros/${cobroId}`).send({
+      items: [
+        {
+          precioId: null,
+          nombre: 'Ajuste ficticio',
+          cantidad: 1,
+          importeUnitario: 3000,
+        },
+      ],
+      motivoCambio: 'Ajuste ficticio al total pagado',
+    });
+
+    expect(saldado.status).toBe(200);
+    expect(saldado.body.cobro.total).toBe(3000);
+    expect(saldado.body.cobro.estado).toBe('pagado');
+    expect(saldado.body.cobro.saldo).toBe(0);
+    expect(saldado.body.cobro.items).toHaveLength(1);
+    expect(await estadoIngreso(ingresoId)).toBe('atendido');
+    expect(await contarAuditoriaAccion('cobro', cobroId, 'editar')).toBe(2);
+  });
+
+  it('exige observación en un detalle sin cargo y rechaza ítems inválidos', async () => {
+    const { ingresoId, visitaId } = await crearVisitaCerrada({
+      nombre: 'Paciente Detalle Sin Cargo',
+    });
+
+    const sinObservacion = await agenteRecepcion.post('/api/cobros').send({
+      visitaId,
+      items: [{ nombre: 'Cortesía ficticia', cantidad: 1, importeUnitario: 0 }],
+    });
+    expect(sinObservacion.status).toBe(400);
+    expect(sinObservacion.body.error.detalles[0].campo).toBe('observaciones');
+
+    const conObservacion = await agenteRecepcion.post('/api/cobros').send({
+      visitaId,
+      items: [{ nombre: 'Cortesía ficticia', cantidad: 1, importeUnitario: 0 }],
+      observaciones: 'Cortesía ficticia de control',
+    });
+
+    expect(conObservacion.status).toBe(201);
+    expect(conObservacion.body.cobro.total).toBe(0);
+    expect(conObservacion.body.cobro.estado).toBe('pagado');
+    expect(await estadoIngreso(ingresoId)).toBe('atendido');
+
+    const { visitaId: otraVisita } = await crearVisitaCerrada({
+      nombre: 'Paciente Detalle Inválido',
+    });
+
+    const cantidadCero = await agenteRecepcion.post('/api/cobros').send({
+      visitaId: otraVisita,
+      items: [{ nombre: 'Concepto ficticio', cantidad: 0, importeUnitario: 1000 }],
+    });
+    expect(cantidadCero.status).toBe(400);
+
+    const precioInexistente = await agenteRecepcion.post('/api/cobros').send({
+      visitaId: otraVisita,
+      items: [
+        {
+          precioId: 999999,
+          nombre: 'Concepto con precio inexistente',
+          cantidad: 1,
+          importeUnitario: 1000,
+        },
+      ],
+    });
+    expect(precioInexistente.status).toBe(400);
+  });
+
   it('incluye en pendientes las visitas cerradas sin ingreso', async () => {
     const pacienteId = await crearPacienteDemo(clienteId, especieId, {
       nombre: 'Paciente Sin Ingreso',
