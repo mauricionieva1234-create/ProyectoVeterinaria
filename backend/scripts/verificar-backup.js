@@ -17,7 +17,11 @@ function elegirBackup() {
   const argumento = process.argv.find((valor) => valor.startsWith('--archivo='));
 
   if (argumento) {
-    return resolve(argumento.split('=').slice(1).join('='));
+    const valor = argumento.split('=').slice(1).join('=');
+    // Se acepta una ruta absoluta o relativa, tanto a la raíz del repo como a
+    // backend/, porque npm ejecuta el script dentro de backend/.
+    const candidatos = [resolve(valor), resolve(raiz, valor), resolve(raiz, '..', valor)];
+    return candidatos.find((ruta) => existsSync(ruta)) ?? candidatos[0];
   }
 
   if (!existsSync(carpeta)) return null;
