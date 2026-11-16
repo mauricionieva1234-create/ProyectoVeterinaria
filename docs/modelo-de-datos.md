@@ -214,6 +214,7 @@ Todos llevan `paciente_id` (obligatorio) y `visita_id` (opcional, porque una vac
 | Crear y editar visitas y registros clínicos | No | Sí | Sí |
 | Ver la historia clínica completa (solo lectura) | Sí | Sí | Sí |
 | Exportar o imprimir la historia clínica (queda registrado) | Sí | Sí | Sí |
+| Usar el asistente de consultas (solo lectura) | Sí | Sí | Sí |
 | Ver controles y gestionar avisos | Sí | Sí | Sí |
 | Anular registros clínicos (con motivo) | No | Sí | Sí |
 | Unir clientes duplicados | No | No | Sí |
@@ -231,6 +232,7 @@ Todos llevan `paciente_id` (obligatorio) y `visita_id` (opcional, porque una vac
 7. **Unión de duplicados.** Solo el administrador. Reasigna pacientes, visitas y registros al cliente que se conserva y deja `fusionado_en_cliente_id` en el otro.
 8. **Anulación en lugar de borrado.** Los registros clínicos no se eliminan.
 9. **Historia clínica para el cliente.** Recepción puede ver la historia clínica completa en solo lectura, pero no crear, editar ni anular nada clínico. Cuando un titular la pide, se verifica su documento, se imprime o se exporta, y la entrega queda registrada en la auditoría (acción exportar, con a quién se entregó).
+10. **Asistente de consultas.** Es un chat local por reglas, sin IA externa, disponible solo con sesión iniciada y permiso `asistente.usar`. Responde con datos exactos de la base a partir de un término de búsqueda por mascota, titular, documento, teléfono o código `PAC-...`, y a pedidos como controles de hoy, de mañana o pendientes. Si hay varias coincidencias, muestra opciones para elegir. Es de solo lectura: no crea, edita, anula ni audita, no ejecuta el cierre automático de controles vencidos y no conserva memoria entre sesiones. El documento se muestra enmascarado y los datos clínicos respetan el permiso `historia.ver`.
 
 ## 7. Cómo se engancha la etapa 2 (cobros)
 

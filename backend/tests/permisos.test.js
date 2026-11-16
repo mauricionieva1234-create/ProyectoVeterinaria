@@ -64,14 +64,18 @@ describe('permisos por rol', () => {
     // La lectura y la exportación de la historia son un permiso aparte.
     expect(tienePermiso('recepcion', 'historia.ver')).toBe(true);
     expect(tienePermiso('recepcion', 'historia.exportar')).toBe(true);
+    expect(tienePermiso('recepcion', 'asistente.usar')).toBe(true);
 
     expect(tienePermiso('veterinario', 'visitas.ver_clinico')).toBe(true);
     expect(tienePermiso('veterinario', 'visitas.editar')).toBe(true);
     expect(tienePermiso('veterinario', 'historia.ver')).toBe(true);
+    expect(tienePermiso('veterinario', 'asistente.usar')).toBe(true);
     expect(tienePermiso('veterinario', 'usuarios.ver')).toBe(false);
 
     expect(tienePermiso('admin', 'usuarios.ver')).toBe(true);
     expect(tienePermiso('admin', 'auditoria.ver')).toBe(true);
+    expect(tienePermiso('admin', 'asistente.usar')).toBe(true);
+    expect(tienePermiso('rol_desconocido', 'asistente.usar')).toBe(false);
   });
 
   it('solo el admin puede listar usuarios', async () => {

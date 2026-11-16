@@ -12,6 +12,7 @@ import { rutasVisitas } from './modulos/visitas/rutas.js';
 import { rutasRegistros } from './modulos/registros/rutas.js';
 import { rutasControles } from './modulos/controles/rutas.js';
 import { rutasAdjuntos } from './modulos/adjuntos/rutas.js';
+import { rutasAsistente } from './modulos/asistente/rutas.js';
 
 export const rutas = Router();
 
@@ -28,3 +29,4 @@ rutas.use('/visitas', rutasVisitas);
 rutas.use('/registros', rutasRegistros);
 rutas.use('/controles', rutasControles);
 rutas.use('/adjuntos', rutasAdjuntos);
+rutas.use('/asistente', rutasAsistente);
