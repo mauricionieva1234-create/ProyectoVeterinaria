@@ -48,6 +48,40 @@ const COBRO_PAGADO = {
   paciente: { id: 12, nombre: 'Paciente Pagado', codigoInterno: 'PAC-000012' },
 };
 
+const DETALLE_COBRO = {
+  ...DEUDA,
+  items: [
+    {
+      id: '1',
+      precioId: '1',
+      nombre: 'Consulta demo',
+      cantidad: 2,
+      importeUnitario: 3000,
+      subtotal: 6000,
+    },
+    {
+      id: '2',
+      precioId: null,
+      nombre: 'Concepto manual demo',
+      cantidad: 1,
+      importeUnitario: 2000,
+      subtotal: 2000,
+    },
+  ],
+  pagos: [
+    {
+      id: 9,
+      cobroId: 20,
+      medio: 'efectivo',
+      monto: 4000,
+      fecha: '2026-11-15T15:00:00.000Z',
+      registradoPorNombre: 'Recepción Prueba',
+      anulado: false,
+    },
+  ],
+  observaciones: 'Detalle de prueba',
+};
+
 const CAJA = {
   fecha: '2026-11-15',
   porMedio: [
@@ -114,6 +148,19 @@ function crearFetch(permisos) {
       return respuestaJson({
         datos: [COBRO_PAGADO],
         paginacion: { pagina: 1, limite: 100, total: 1 },
+      });
+    }
+
+    if (ruta === '/api/cobros/20') {
+      return respuestaJson({ cobro: DETALLE_COBRO });
+    }
+
+    if (ruta.startsWith('/api/precios')) {
+      return respuestaJson({
+        datos: [
+          { id: 1, nombre: 'Consulta demo', importe: 3000, activo: true },
+          { id: 2, nombre: 'Vacuna demo', importe: 2500, activo: true },
+        ],
       });
     }
 
@@ -210,5 +257,49 @@ describe('Caja', () => {
 
     // Deuda, cobro del día y los dos movimientos del día.
     expect(screen.getAllByRole('button', { name: 'Anular' }).length).toBe(4);
+  });
+
+  it('abre el detalle del cobro con ítems, pagos y observaciones', async () => {
+    vi.stubGlobal('fetch', crearFetch(PERMISOS_RECEPCION));
+    renderizarCaja();
+
+    const botones = await screen.findAllByRole('button', { name: 'Detalle' });
+    fireEvent.click(botones[0]);
+
+    const dialogo = await screen.findByRole('dialog');
+    expect(await within(dialogo).findByText('Consulta demo')).toBeInTheDocument();
+    expect(within(dialogo).getByText('Concepto manual demo')).toBeInTheDocument();
+    expect(within(dialogo).getByText('Detalle de prueba')).toBeInTheDocument();
+    expect(within(dialogo).getByText('Recepción Prueba')).toBeInTheDocument();
+  });
+
+  it('calcula el total al cargar un cobro detallado por ítem', async () => {
+    vi.stubGlobal('fetch', crearFetch(PERMISOS_RECEPCION));
+    renderizarCaja();
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Cobrar' }));
+    const dialogo = await screen.findByRole('dialog');
+
+    fireEvent.click(within(dialogo).getByLabelText('Detallado por ítem'));
+
+    fireEvent.change(await within(dialogo).findByLabelText('Concepto del ítem 1'), {
+      target: { value: 'Consulta demo' },
+    });
+    fireEvent.change(within(dialogo).getByLabelText('Cantidad del ítem 1'), {
+      target: { value: '2' },
+    });
+    fireEvent.change(within(dialogo).getByLabelText('Importe unitario del ítem 1'), {
+      target: { value: '5000' },
+    });
+
+    fireEvent.click(within(dialogo).getByRole('button', { name: 'Agregar ítem' }));
+    fireEvent.change(within(dialogo).getByLabelText('Concepto del ítem 2'), {
+      target: { value: 'Vacuna demo' },
+    });
+    fireEvent.change(within(dialogo).getByLabelText('Importe unitario del ítem 2'), {
+      target: { value: '3000' },
+    });
+
+    expect(within(dialogo).getAllByText(/13\.000/).length).toBeGreaterThan(0);
   });
 });
