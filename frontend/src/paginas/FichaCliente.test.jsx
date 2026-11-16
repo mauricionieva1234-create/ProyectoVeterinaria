@@ -48,6 +48,17 @@ const PACIENTE_CREADO = {
   fechaDeceso: null,
 };
 
+const OTRO_CLIENTE = {
+  ...CLIENTE,
+  id: 2,
+  nombre: 'Otro',
+  apellido: 'Cliente',
+  nroDocumento: '90000002',
+  telefonoPrincipal: '3815550002',
+  nombreCompleto: 'Otro Cliente',
+  pacientes: [],
+};
+
 function crearFetch() {
   return vi.fn(async (url, opciones = {}) => {
     const ruta = String(url);
@@ -68,6 +79,24 @@ function crearFetch() {
 
     if (ruta === '/api/clientes/1') {
       return respuestaJson({ cliente: CLIENTE });
+    }
+
+    if (ruta === '/api/clientes/2') {
+      return respuestaJson({ cliente: OTRO_CLIENTE });
+    }
+
+    if (ruta.startsWith('/api/clientes?')) {
+      return respuestaJson({
+        datos: [OTRO_CLIENTE],
+        paginacion: { pagina: 1, limite: 8, total: 1, totalPaginas: 1 },
+      });
+    }
+
+    if (ruta === '/api/clientes/1/unir' && opciones.method === 'POST') {
+      return respuestaJson({
+        clienteConservado: OTRO_CLIENTE,
+        pacientesReasignados: 0,
+      });
     }
 
     if (ruta.startsWith('/api/catalogos/especies')) {
@@ -150,5 +179,38 @@ describe('FichaCliente', () => {
     });
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('exige revisar y confirmar antes de fusionar dos clientes', async () => {
+    const fetchFalso = crearFetch();
+    vi.stubGlobal('fetch', fetchFalso);
+    const usuario = userEvent.setup();
+    renderizarFicha();
+
+    await usuario.click(await screen.findByRole('button', { name: 'Unir duplicado' }));
+    await usuario.type(screen.getByLabelText('Buscar cliente'), 'Otro');
+    await usuario.click(await screen.findByRole('button', { name: /Otro Cliente/ }));
+
+    await usuario.click(screen.getByRole('button', { name: 'Continuar' }));
+
+    expect(
+      screen.getByText(/Esta acción no se puede deshacer desde la aplicación/),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Cliente, Otro')).toBeInTheDocument();
+
+    const fusionar = screen.getByRole('button', { name: 'Fusionar definitivamente' });
+    expect(fusionar).toBeDisabled();
+
+    await usuario.click(screen.getByRole('checkbox'));
+    expect(fusionar).toBeEnabled();
+    await usuario.click(fusionar);
+
+    await waitFor(() => {
+      const llamada = fetchFalso.mock.calls.find(
+        ([url, opciones]) => String(url) === '/api/clientes/1/unir' && opciones.method === 'POST',
+      );
+      expect(llamada).toBeDefined();
+      expect(JSON.parse(llamada[1].body)).toEqual({ clienteConservadoId: 2 });
+    });
   });
 });

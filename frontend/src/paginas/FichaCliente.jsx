@@ -21,8 +21,14 @@ function Dato({ etiqueta, children }) {
   );
 }
 
+function nombreDeCliente(cliente) {
+  return `${cliente.apellido}, ${cliente.nombre}`;
+}
+
 function UnirCliente({ cliente, onUnido, onCancelar }) {
   const [conservado, setConservado] = useState(null);
+  const [confirmando, setConfirmando] = useState(false);
+  const [entendido, setEntendido] = useState(false);
   const queryClient = useQueryClient();
 
   const unir = useMutation({
@@ -36,6 +42,84 @@ function UnirCliente({ cliente, onUnido, onCancelar }) {
     },
   });
 
+  function elegir(candidato) {
+    setConservado(candidato);
+    setEntendido(false);
+  }
+
+  function volver() {
+    setConfirmando(false);
+    setEntendido(false);
+  }
+
+  if (confirmando) {
+    return (
+      <div className="space-y-4">
+        <p className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">
+          Esta acción no se puede deshacer desde la aplicación. Revisá bien los nombres antes de
+          continuar.
+        </p>
+
+        <dl className="space-y-2 rounded border border-slate-200 bg-slate-50 px-3 py-3 text-sm">
+          <div>
+            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              Se fusiona y deja de listarse
+            </dt>
+            <dd className="font-medium text-slate-900">{nombreDeCliente(cliente)}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              Se conserva
+            </dt>
+            <dd className="font-medium text-slate-900">{nombreDeCliente(conservado)}</dd>
+          </div>
+        </dl>
+
+        <p className="text-sm text-slate-700">
+          Los pacientes y el historial de dueños pasan al cliente conservado.
+        </p>
+
+        <label className="flex items-start gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            className="mt-0.5"
+            checked={entendido}
+            onChange={(evento) => setEntendido(evento.target.checked)}
+          />
+          <span>Confirmo que revisé los datos y entiendo que la fusión no se puede deshacer.</span>
+        </label>
+
+        {unir.isError && (
+          <p
+            className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+            role="alert"
+          >
+            {unir.error.message}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-2 border-t border-slate-200 pt-4">
+          <button
+            type="button"
+            className="rounded border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
+            onClick={volver}
+            disabled={unir.isPending}
+          >
+            Volver
+          </button>
+          <button
+            type="button"
+            className="rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-60"
+            onClick={() => unir.mutate()}
+            disabled={!entendido || unir.isPending}
+          >
+            {unir.isPending ? 'Fusionando...' : 'Fusionar definitivamente'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <p className="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
@@ -43,7 +127,7 @@ function UnirCliente({ cliente, onUnido, onCancelar }) {
         dueños pasan al cliente conservado, y este queda marcado como fusionado.
       </p>
 
-      <SelectorCliente cliente={conservado} onSeleccionar={setConservado} excluirId={cliente.id} />
+      <SelectorCliente cliente={conservado} onSeleccionar={elegir} excluirId={cliente.id} />
 
       {unir.isError && (
         <p
@@ -65,10 +149,10 @@ function UnirCliente({ cliente, onUnido, onCancelar }) {
         <button
           type="button"
           className="rounded bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800 disabled:opacity-60"
-          onClick={() => unir.mutate()}
-          disabled={!conservado || unir.isPending}
+          onClick={() => setConfirmando(true)}
+          disabled={!conservado}
         >
-          {unir.isPending ? 'Uniendo...' : 'Unir clientes'}
+          Continuar
         </button>
       </div>
     </div>
