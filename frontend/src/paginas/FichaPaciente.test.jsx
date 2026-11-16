@@ -52,6 +52,8 @@ const PERMISOS_VETERINARIO = [
 const PERMISOS_RECEPCION = [
   'pacientes.ver',
   'pacientes.editar',
+  'historia.ver',
+  'historia.exportar',
   'controles.ver',
   'avisos.ver',
   'adjuntos.ver',
@@ -127,7 +129,7 @@ describe('FichaPaciente', () => {
     expect(screen.getByRole('button', { name: 'Nueva visita' })).toBeInTheDocument();
   });
 
-  it('recepción solo ve controles y adjuntos, sin acceso a lo clínico', async () => {
+  it('recepción solo ve controles y adjuntos en la ficha, pero accede a la historia completa', async () => {
     vi.stubGlobal('fetch', crearFetch(PERMISOS_RECEPCION));
     renderizarFicha();
 
@@ -136,5 +138,6 @@ describe('FichaPaciente', () => {
     expect(screen.queryByRole('tab', { name: 'Visitas' })).toBeNull();
     expect(screen.queryByRole('tab', { name: 'Vacuna' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Nueva visita' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Historia clínica' })).toBeInTheDocument();
   });
 });

@@ -10,6 +10,7 @@ export const ETIQUETAS_ACCION = {
   anular: 'Anular',
   unir: 'Unir',
   ver_sensible: 'Ver dato sensible',
+  exportar: 'Exportar',
 };
 
 export function etiquetaRol(rol) {

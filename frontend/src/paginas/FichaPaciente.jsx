@@ -44,6 +44,7 @@ export function FichaPaciente() {
   const puedeEditarPaciente = permisos.includes('pacientes.editar');
   const puedeSubirAdjuntos = permisos.includes('adjuntos.crear');
   const puedeCrearVisita = permisos.includes('visitas.crear');
+  const puedeVerHistoria = permisos.includes('historia.ver');
   const [modalEditar, setModalEditar] = useState(false);
   const [modalVisita, setModalVisita] = useState(false);
 
@@ -128,6 +129,11 @@ export function FichaPaciente() {
           </>
         }
       >
+        {puedeVerHistoria && (
+          <Link to={`/pacientes/${paciente.id}/historia-clinica`} className={claseBotonEncabezado}>
+            Historia clínica
+          </Link>
+        )}
         {puedeCrearVisita && !paciente.fechaDeceso && (
           <button
             type="button"

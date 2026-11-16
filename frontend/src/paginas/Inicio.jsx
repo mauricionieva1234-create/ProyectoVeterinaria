@@ -62,7 +62,7 @@ export function Inicio() {
       <EncabezadoPagina
         tono="teal"
         titulo="Sistema de gestión veterinaria"
-        descripcion="Fase 4 lista: historial clínico con visitas, medicación, registros, controles, avisos y adjuntos. Recepción administra la cola y los controles sin acceder a lo clínico."
+        descripcion="Fase 4 lista: historia clínica con visitas, medicación, registros, controles, avisos y adjuntos. Recepción administra la cola y puede leer y exportar la historia completa sin editar nada clínico."
       />
 
       <Panel tono="teal" titulo="Estado del backend">

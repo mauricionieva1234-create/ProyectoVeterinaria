@@ -27,8 +27,8 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-teal-50 via-slate-50 to-sky-50 text-slate-900">
-      <header className="sticky top-0 z-40 border-b border-teal-100/80 bg-white/85 backdrop-blur">
+    <div className="min-h-screen bg-linear-to-br from-teal-50 via-slate-50 to-sky-50 text-slate-900 print:bg-white">
+      <header className="sticky top-0 z-40 border-b border-teal-100/80 bg-white/85 backdrop-blur print:hidden">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <NavLink
             to="/"
@@ -115,7 +115,7 @@ export function Layout() {
         />
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8">
+      <main className="mx-auto max-w-6xl px-4 py-8 print:max-w-none print:px-0 print:py-0">
         <Outlet />
       </main>
     </div>

@@ -82,6 +82,7 @@ export function Auditoria() {
               <option value="anular">Anular</option>
               <option value="unir">Unir</option>
               <option value="ver_sensible">Ver dato sensible</option>
+              <option value="exportar">Exportar</option>
             </select>
           </div>
 

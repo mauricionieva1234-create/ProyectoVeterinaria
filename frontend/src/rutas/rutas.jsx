@@ -11,6 +11,7 @@ import { Controles } from '../paginas/Controles.jsx';
 import { FichaCliente } from '../paginas/FichaCliente.jsx';
 import { FichaPaciente } from '../paginas/FichaPaciente.jsx';
 import { FichasIncompletas } from '../paginas/FichasIncompletas.jsx';
+import { HistoriaClinica } from '../paginas/HistoriaClinica.jsx';
 import { IngresosSinCerrar } from '../paginas/IngresosSinCerrar.jsx';
 import { Inicio } from '../paginas/Inicio.jsx';
 import { Login } from '../paginas/Login.jsx';
@@ -64,6 +65,14 @@ export const router = createBrowserRouter([
       { path: 'clientes', element: <Clientes /> },
       { path: 'clientes/:id', element: <FichaCliente /> },
       { path: 'pacientes/:id', element: <FichaPaciente /> },
+      {
+        path: 'pacientes/:id/historia-clinica',
+        element: (
+          <RutaPermiso permiso="historia.ver">
+            <HistoriaClinica />
+          </RutaPermiso>
+        ),
+      },
       { path: 'fichas-incompletas', element: <FichasIncompletas /> },
       { path: 'catalogos', element: <Catalogos /> },
       {
