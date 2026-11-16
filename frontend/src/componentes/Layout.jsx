@@ -1,8 +1,14 @@
+import { lazy, Suspense } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useLogout, useSesion } from '../hooks/useSesion.js';
 import { etiquetaRol } from '../utils/roles.js';
 import { BuscadorGlobal } from './BuscadorGlobal.jsx';
-import { AsistenteChat } from './AsistenteChat.jsx';
+import { CargandoPagina } from './CargandoPagina.jsx';
+
+// El asistente solo se descarga si el usuario tiene permiso para usarlo.
+const AsistenteChat = lazy(() =>
+  import('./AsistenteChat.jsx').then((modulo) => ({ default: modulo.AsistenteChat })),
+);
 
 function claseEnlace({ isActive }) {
   return [
@@ -122,10 +128,16 @@ export function Layout() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8 print:max-w-none print:px-0 print:py-0">
-        <Outlet />
+        <Suspense fallback={<CargandoPagina />}>
+          <Outlet />
+        </Suspense>
       </main>
 
-      {permisos.includes('asistente.usar') && <AsistenteChat />}
+      {permisos.includes('asistente.usar') && (
+        <Suspense fallback={null}>
+          <AsistenteChat />
+        </Suspense>
+      )}
     </div>
   );
 }

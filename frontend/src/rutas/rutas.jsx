@@ -1,31 +1,50 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
+import { CargandoPagina } from '../componentes/CargandoPagina.jsx';
 import { Layout } from '../componentes/Layout.jsx';
 import { RutaAdmin } from '../componentes/RutaAdmin.jsx';
 import { RutaPermiso } from '../componentes/RutaPermiso.jsx';
 import { RutaProtegida } from '../componentes/RutaProtegida.jsx';
-import { Auditoria } from '../paginas/Auditoria.jsx';
-import { Caja } from '../paginas/Caja.jsx';
-import { Catalogos } from '../paginas/Catalogos.jsx';
-import { Clientes } from '../paginas/Clientes.jsx';
-import { Cola } from '../paginas/Cola.jsx';
-import { Controles } from '../paginas/Controles.jsx';
-import { FichaCliente } from '../paginas/FichaCliente.jsx';
-import { FichaPaciente } from '../paginas/FichaPaciente.jsx';
-import { FichasIncompletas } from '../paginas/FichasIncompletas.jsx';
-import { HistoriaClinica } from '../paginas/HistoriaClinica.jsx';
-import { IngresosSinCerrar } from '../paginas/IngresosSinCerrar.jsx';
-import { Inicio } from '../paginas/Inicio.jsx';
-import { Login } from '../paginas/Login.jsx';
-import { NoAutorizado } from '../paginas/NoAutorizado.jsx';
-import { NoEncontrada } from '../paginas/NoEncontrada.jsx';
-import { Usuarios } from '../paginas/Usuarios.jsx';
-import { Visita } from '../paginas/Visita.jsx';
-import { Visitas } from '../paginas/Visitas.jsx';
+
+// Cada página se carga como un paquete aparte. La app abre más rápido y el
+// navegador solo descarga la pantalla que se está usando.
+function diferida(cargar, nombre) {
+  return lazy(() => cargar().then((modulo) => ({ default: modulo[nombre] })));
+}
+
+const Auditoria = diferida(() => import('../paginas/Auditoria.jsx'), 'Auditoria');
+const Caja = diferida(() => import('../paginas/Caja.jsx'), 'Caja');
+const Catalogos = diferida(() => import('../paginas/Catalogos.jsx'), 'Catalogos');
+const Clientes = diferida(() => import('../paginas/Clientes.jsx'), 'Clientes');
+const Cola = diferida(() => import('../paginas/Cola.jsx'), 'Cola');
+const Controles = diferida(() => import('../paginas/Controles.jsx'), 'Controles');
+const FichaCliente = diferida(() => import('../paginas/FichaCliente.jsx'), 'FichaCliente');
+const FichaPaciente = diferida(() => import('../paginas/FichaPaciente.jsx'), 'FichaPaciente');
+const FichasIncompletas = diferida(
+  () => import('../paginas/FichasIncompletas.jsx'),
+  'FichasIncompletas',
+);
+const HistoriaClinica = diferida(() => import('../paginas/HistoriaClinica.jsx'), 'HistoriaClinica');
+const IngresosSinCerrar = diferida(
+  () => import('../paginas/IngresosSinCerrar.jsx'),
+  'IngresosSinCerrar',
+);
+const Inicio = diferida(() => import('../paginas/Inicio.jsx'), 'Inicio');
+const Login = diferida(() => import('../paginas/Login.jsx'), 'Login');
+const NoAutorizado = diferida(() => import('../paginas/NoAutorizado.jsx'), 'NoAutorizado');
+const NoEncontrada = diferida(() => import('../paginas/NoEncontrada.jsx'), 'NoEncontrada');
+const Usuarios = diferida(() => import('../paginas/Usuarios.jsx'), 'Usuarios');
+const Visita = diferida(() => import('../paginas/Visita.jsx'), 'Visita');
+const Visitas = diferida(() => import('../paginas/Visitas.jsx'), 'Visitas');
 
 export const router = createBrowserRouter([
   {
     path: '/login',
-    element: <Login />,
+    element: (
+      <Suspense fallback={<CargandoPagina />}>
+        <Login />
+      </Suspense>
+    ),
   },
   {
     path: '/',
