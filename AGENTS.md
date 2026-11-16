@@ -23,7 +23,8 @@ consulta antes de inventar requisitos.
 ```
 backend/
   migrations/        SQL numerado (una migración por grupo de tablas)
-  scripts/           seed, seed:demo, backup
+  scripts/           seed, seed:demo, backup y verificación de backups
+  backups/           Archivos .dump locales, ignorados por git
   src/
     config/          entorno, conexión, logger, permisos
     middlewares/     autenticación, permisos, validación, errores
@@ -59,6 +60,9 @@ La lógica de negocio vive en el servicio, nunca en las rutas.
   Windows (sin sintaxis exclusiva de bash).
 - Formato es-AR en la interfaz: `dd/mm/aaaa`, 24 horas, hora de Tucumán
   (UTC-3).
+- Accesibilidad mínima: los modales atrapan y devuelven el foco, cierran con
+  Escape y tienen nombre accesible. Las páginas se cargan por rutas separadas
+  (`React.lazy` + `Suspense`).
 
 ## Reglas de dominio que no se rompen
 
@@ -75,7 +79,8 @@ La lógica de negocio vive en el servicio, nunca en las rutas.
 7. Control: nace de una visita; vencido pasa a `ausente`; reprogramar crea otro
    y deja el original como `reprogramado`.
 8. Unión de clientes duplicados: solo admin; reasigna pacientes, visitas y
-   registros, y marca `fusionado_en_cliente_id`.
+   registros, y marca `fusionado_en_cliente_id`. El frontend muestra un resumen
+   de ambos clientes y exige una confirmación explícita antes de fusionar.
 9. Nada clínico se borra: se anula con `anulado`, `motivo_anulacion`,
    `anulado_por` y `anulado_en`.
 10. Recepción puede leer la historia clínica completa y usar el asistente local
@@ -127,7 +132,9 @@ npm run db:rollback
 npm run seed
 npm run seed:demo
 npm run db:backup
+npm run db:backup:verificar
 ```
 
 Los detalles de instalación en Windows, variables de entorno y restauración de
-backups están en `README.md`.
+backups están en `README.md`. Las decisiones y verificaciones del endurecimiento
+están en `docs/endurecimiento.md`.

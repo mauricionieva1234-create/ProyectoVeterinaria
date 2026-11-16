@@ -14,8 +14,19 @@ La fuente de verdad del dominio es [`docs/modelo-de-datos.md`](docs/modelo-de-da
 
 - Node.js 22.12 o superior (probado con Node 24).
 - npm 10 o superior.
-- PostgreSQL 14 o superior con `psql`, `pg_dump` y `pg_restore` en el `PATH`.
+- PostgreSQL 14 o superior con `psql`, `pg_dump` y `pg_restore`.
 - Windows con PowerShell y VS Code.
+
+`pg_dump` y `pg_restore` tienen que ser de la misma versión mayor que el
+servidor. Si en el `PATH` hay una instalación vieja, definí `PG_BIN` con la
+carpeta correcta antes de hacer un backup:
+
+```powershell
+$env:PG_BIN = "C:\Program Files\PostgreSQL\18\bin"
+```
+
+Los scripts también buscan solos la carpeta de la versión del servidor, así que
+`PG_BIN` solo hace falta cuando la instalación está en otra ruta.
 
 ## Instalación en Windows
 
@@ -134,7 +145,8 @@ El mapa de permisos vive en `backend/src/config/permisos.js`. El backend es la
 | `npm run db:reset` | Revierte todo y vuelve a migrar desarrollo |
 | `npm run seed` | Carga especies, razas, franjas y el admin inicial |
 | `npm run seed:demo` | Carga datos ficticios de demostración |
-| `npm run db:backup` | Genera un backup comprimido en `backend/backups/` |
+| `npm run db:backup` | Genera un backup comprimido en `backend/backups/` y rota los viejos |
+| `npm run db:backup:verificar` | Restaura el último backup en una base temporal y compara los datos |
 
 Los tests del backend usan `veterinaria_test`, aplican las migraciones una vez y
 truncan las tablas entre archivos. Nunca tocan `veterinaria_dev`.
@@ -147,19 +159,66 @@ Generar un backup (formato custom de PostgreSQL):
 npm run db:backup
 ```
 
-Restaurar un backup sobre `veterinaria_dev`:
+El archivo queda en `backend/backups/` (carpeta ignorada por git). Por defecto se
+conservan los últimos 14 backups; los más viejos se borran solos. Para cambiar la
+retención:
+
+```powershell
+npm run db:backup -- --retencion=30
+```
+
+### Verificar que el backup sirve
+
+```powershell
+npm run db:backup:verificar
+```
+
+El comando restaura el backup más reciente en una base temporal
+(`veterinaria_verificacion_*`), compara la cantidad de filas de todas las tablas
+públicas y comprueba que estén las extensiones y la función de búsqueda sin
+tildes. Si todo coincide, elimina la base temporal. Es la forma recomendada de
+comprobar un backup sin tocar `veterinaria_dev`. Conviene correrlo con el backend
+detenido para que no haya escrituras durante la comparación.
+
+Para verificar un archivo puntual:
+
+```powershell
+npm run db:backup:verificar -- --archivo="backend\backups\veterinaria-2026-11-15_23-28-26.dump"
+```
+
+### Restaurar un backup sobre `veterinaria_dev`
 
 ```powershell
 $env:PGPASSWORD = "TU_CLAVE"
 pg_restore --clean --if-exists --no-owner `
-  --host=localhost --port=5432 --username=postgres `
+  --host=localhost --port=5433 --username=postgres `
   --dbname=veterinaria_dev `
   backend\backups\veterinaria-AAAA-MM-DD....dump
 Remove-Item Env:\PGPASSWORD
 ```
 
 La restauración borra y vuelve a crear los objetos de la base indicada. Hacelo
-con el backend detenido y verificá el nombre de la base antes de ejecutarlo.
+con el backend detenido y verificá el nombre de la base antes de ejecutarlo. Si
+`pg_restore` no es la versión del servidor, usá la ruta completa o definí
+`PG_BIN` como se explica en los requisitos.
+
+### Backup automático en Windows
+
+Una tarea programada del Programador de tareas puede correr el backup todos los
+días. Creá la tarea con una acción que ejecute `npm` en la carpeta del proyecto:
+
+```powershell
+$accion = New-ScheduledTaskAction -Execute "C:\Program Files\nodejs\npm.cmd" `
+  -Argument "run db:backup" -WorkingDirectory "C:\PRYECTOS - TUP\veterinaria"
+$disparador = New-ScheduledTaskTrigger -Daily -At 23:00
+Register-ScheduledTask -TaskName "Veterinaria backup" -Action $accion `
+  -Trigger $disparador -Description "Backup diario de la base veterinaria"
+```
+
+La tarea usa el usuario con el que se registra. Verificá una vez que el archivo
+aparezca en `backend\backups\` y que `npm run db:backup:verificar` termine bien.
+Si el servidor PostgreSQL está en otro equipo, agregá `PG_BIN` a las variables de
+entorno del usuario antes de registrar la tarea.
 
 ## Estructura
 
@@ -168,6 +227,7 @@ veterinaria/
 ├── AGENTS.md              Mapa permanente para agentes y colaboradores
 ├── docs/
 │   ├── modelo-de-datos.md Fuente de verdad del dominio
+│   ├── endurecimiento.md  Mejoras de robustez, accesibilidad y backups
 │   ├── plan-fase-0-1.md   Plan aprobado de las primeras fases
 │   └── plan-etapa-2.md    Plan aprobado de cobros y caja
 ├── backend/
@@ -207,6 +267,7 @@ principales:
 | `ADMIN_*` | Credenciales del admin inicial del seed |
 | `SEED_DEMO_PASSWORD` | Contraseña de los usuarios demo |
 | `ZONA_HORARIA` | Zona usada para mostrar fechas (`America/Argentina/Tucuman`) |
+| `PG_BIN` | Opcional: carpeta de `pg_dump` y `pg_restore` si no están en el `PATH` |
 
 `.env` está en `.gitignore`; nunca se commitea.
 
@@ -234,9 +295,12 @@ principales:
 - [x] **Asistente local:** consultas por reglas, con sesión y en solo lectura.
 - [x] **Etapa 2 (cobros y caja):** cobro por visita, pagos por medio, deudas,
       anulación auditada y cierre diario imprimible.
+- [x] **Endurecimiento:** confirmación de fusiones, modales accesibles, carga por
+      rutas, backups verificables y prueba de flujo completo.
 - [ ] **Próximas etapas:** lista de precios con historial, detalle por ítem,
       venta de productos, stock y reportes.
 
 Los detalles de las próximas fases están en
-[`docs/plan-fase-0-1.md`](docs/plan-fase-0-1.md) y el alcance implementado de
-cobros en [`docs/plan-etapa-2.md`](docs/plan-etapa-2.md).
+[`docs/plan-fase-0-1.md`](docs/plan-fase-0-1.md), el alcance implementado de
+cobros en [`docs/plan-etapa-2.md`](docs/plan-etapa-2.md) y las mejoras de
+robustez en [`docs/endurecimiento.md`](docs/endurecimiento.md).
