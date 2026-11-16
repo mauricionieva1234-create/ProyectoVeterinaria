@@ -2,11 +2,11 @@
 
 Borrador v1 · 8 de noviembre de 2026 · Motor de base de datos: PostgreSQL
 
-## 1. Alcance de las etapas 1 y 2
+## 1. Alcance de las etapas 1, 2 y 3
 
-**Incluye:** alta de clientes y pacientes (con alta rápida para urgencias), cola de espera diaria con urgencias, visita clínica con historial de cambios, registros por tipo (vacunas, antiparasitarios, estudios, cirugías y controles), avisos manuales de control, fichas incompletas, unión de duplicados, permisos por rol, cobro de visitas, pagos por medio, deudas y cierre diario de caja.
+**Incluye:** alta de clientes y pacientes (con alta rápida para urgencias), cola de espera diaria con urgencias, visita clínica con historial de cambios, registros por tipo (vacunas, antiparasitarios, estudios, cirugías y controles), avisos manuales de control, fichas incompletas, unión de duplicados, permisos por rol, cobro de visitas, pagos por medio, deudas, cierre diario de caja, lista de precios con historial y detalle del cobro por ítem.
 
-**Fuera de alcance:** lista de precios con historial, detalle del cobro por ítem, venta de productos y stock, facturación fiscal, recordatorios automáticos por correo o WhatsApp, turnos y reportes.
+**Fuera de alcance:** venta de productos y stock, facturación fiscal, recordatorios automáticos por correo o WhatsApp, turnos y reportes.
 
 ## 2. Convenciones generales
 
@@ -23,6 +23,8 @@ Borrador v1 · 8 de noviembre de 2026 · Motor de base de datos: PostgreSQL
 - Un paciente tiene muchos ingresos a la cola, muchas visitas y muchos registros (vacunas, antiparasitarios, estudios, cirugías y controles).
 - Un ingreso a la cola puede generar una visita. Una visita tiene medicación, versiones, notas y adjuntos.
 - Una visita cerrada puede tener un cobro, y un cobro tiene muchos pagos. Las deudas son los cobros activos con saldo.
+- Un cobro puede tener muchos ítems. Cada ítem puede referenciar un precio de la lista o quedar como concepto manual, y guarda su propio snapshot de nombre e importe.
+- Un precio tiene muchos cambios en su historial. Desactivarlo no borra nada.
 - Un control nace de una visita y tiene muchos avisos.
 
 ## 4. Tablas
@@ -210,6 +212,12 @@ Todos llevan `paciente_id` (obligatorio) y `visita_id` (opcional, porque una vac
 
 **pago**: `cobro_id`, `medio` (`efectivo`, `debito`, `credito`, `transferencia`), `monto numeric(12,2)`, `fecha`, `registrado_por`, `anulado`, `motivo_anulacion`, `anulado_por`, `anulado_en`, timestamps y usuarios de creación/edición. Un cobro puede tener varios pagos parciales. El saldo no se guarda: se calcula como total menos la suma de pagos activos.
 
+**precio**: `nombre`, `importe numeric(12,2)`, `activo`, `observaciones`, timestamps y usuarios de creación/edición. Es la lista de precios de servicios vigente. Un índice único parcial impide dos precios activos con el mismo nombre, comparando sin mayúsculas ni tildes.
+
+**precio_historial**: `precio_id`, `nombre_anterior`, `nombre_nuevo`, `importe_anterior`, `importe_nuevo`, `motivo`, `cambiado_por`, `cambiado_en`. Es append-only: cada alta y cada cambio de nombre o importe deja una fila. Desactivar o reactivar no borra el historial.
+
+**cobro_item**: `cobro_id`, `precio_id` (opcional), `nombre`, `cantidad` (entero positivo), `importe_unitario numeric(12,2)`, `subtotal numeric(12,2)` generado. `nombre` e `importe_unitario` son un snapshot del momento del cobro: si después cambia la lista de precios, el cobro no se altera. Un ítem sin `precio_id` es un concepto manual.
+
 ## 5. Permisos por rol
 
 | Acción | Recepción | Veterinario | Admin |
@@ -225,7 +233,9 @@ Todos llevan `paciente_id` (obligatorio) y `visita_id` (opcional, porque una vac
 | Ver controles y gestionar avisos | Sí | Sí | Sí |
 | Cobrar visitas y registrar pagos | Sí | Sí | Sí |
 | Ver la caja y el cierre del día | Sí | Sí | Sí |
-| Corregir el total de un cobro (con motivo) | Sí | Sí | Sí |
+| Corregir el total o el detalle de un cobro (con motivo) | Sí | Sí | Sí |
+| Consultar la lista de precios | Sí | Sí | Sí |
+| Crear, editar, desactivar o reactivar precios | No | No | Sí |
 | Anular cobros y pagos (con motivo) | No | No | Sí |
 | Anular registros clínicos (con motivo) | No | Sí | Sí |
 | Unir clientes duplicados | No | No | Sí |
@@ -244,7 +254,7 @@ Todos llevan `paciente_id` (obligatorio) y `visita_id` (opcional, porque una vac
 8. **Anulación en lugar de borrado.** Los registros clínicos no se eliminan.
 9. **Historia clínica para el cliente.** Recepción puede ver la historia clínica completa en solo lectura, pero no crear, editar ni anular nada clínico. Cuando un titular la pide, se verifica su documento, se imprime o se exporta, y la entrega queda registrada en la auditoría (acción exportar, con a quién se entregó).
 10. **Asistente de consultas.** Es un chat local por reglas, sin IA externa, disponible solo con sesión iniciada y permiso `asistente.usar`. Responde con datos exactos de la base a partir de un término de búsqueda por mascota, titular, documento, teléfono o código `PAC-...`, y a pedidos como controles de hoy, de mañana o pendientes. Si hay varias coincidencias, muestra opciones para elegir. Es de solo lectura: no crea, edita, anula ni audita, no ejecuta el cierre automático de controles vencidos y no conserva memoria entre sesiones. El documento se muestra enmascarado y los datos clínicos respetan el permiso `historia.ver`.
-11. **Cobros y caja.** Cada visita cerrada se cobra una sola vez, con total manual y pagos parciales o totales por medio. Al cerrar la visita, el ingreso pasa a `esperando_cobro`; cuando el cobro queda pagado, pasa a `atendido`. Las deudas son los cobros activos con saldo. Un pago mal cargado se anula con motivo y el saldo vuelve a aparecer; solo el admin puede anular cobros y pagos. El cierre del día se calcula desde los pagos activos por medio y se imprime, sin guardarse. Quedan para más adelante la lista de precios, el detalle por ítem, la venta de productos y el stock.
+11. **Cobros y caja.** Cada visita cerrada se cobra una sola vez, con total manual o con detalle por ítem, y pagos parciales o totales por medio. Al cerrar la visita, el ingreso pasa a `esperando_cobro`; cuando el cobro queda pagado, pasa a `atendido`. Las deudas son los cobros activos con saldo. Un pago mal cargado se anula con motivo y el saldo vuelve a aparecer; solo el admin puede anular cobros y pagos. Corregir el total o el detalle exige motivo y no puede dejar el total por debajo de lo ya pagado. El cierre del día se calcula desde los pagos activos por medio y se imprime, sin guardarse. Quedan para más adelante la venta de productos y el stock.
 
 ## 7. Etapa 2: cobros y caja
 
@@ -256,7 +266,26 @@ Implementada en la migración `014_cobros.sql`, sin tocar las tablas anteriores:
 
 El cierre del día usa la zona `America/Argentina/Tucumán` y suma solo pagos activos. No se persiste un cierre: se calcula y se imprime. Fuera de alcance: lista de precios con historial, detalle por ítem, venta de productos, stock y facturación fiscal.
 
-## 8. Preguntas abiertas
+## 8. Etapa 3: lista de precios y detalle del cobro
+
+Implementada en la migración `015_precios_y_detalle.sql`, sin tocar las tablas anteriores:
+
+- **precio**: lista de servicios con importe, estado activo y observaciones. Nombre único entre los activos, comparando sin mayúsculas ni tildes.
+- **precio_historial**: cada alta y cada cambio de nombre o importe, con motivo, usuario y fecha. Es append-only y no se borra al desactivar.
+- **cobro_item**: detalle del cobro con concepto, cantidad, importe unitario y subtotal generado. Guarda un snapshot de nombre e importe, así que los cambios de la lista no alteran cobros viejos.
+- **cobro**: sigue teniendo `total`. Si se cargan ítems, el backend calcula la suma de subtotales y descarta el total enviado; si no, se mantiene el total manual de la etapa 2.
+
+Reglas:
+
+- Consultar la lista está disponible para los tres roles. Crear, editar, desactivar y reactivar precios es solo del admin, siempre con motivo al editar.
+- Un cobro detallado se edita con ítems; intentar editarlo solo con total se rechaza. Un cobro manual se edita con total.
+- El total de un cobro editado no puede quedar por debajo de lo ya pagado.
+- Un total 0, manual o por ítems, exige observación y deja el cobro `pagado`.
+- El detalle del cobro y la caja muestran ítems, subtotales y pagos, incluidos los anulados.
+
+Fuera de alcance: venta de productos, stock, facturación fiscal, descuentos, recargos y listas por sucursal.
+
+## 9. Preguntas abiertas
 
 1. ¿Para qué se usa el campo Código Veterinaria de MyVete?
 2. ¿Puede haber más de un veterinario en una misma visita (por ejemplo, en cirugías con ayudante)?

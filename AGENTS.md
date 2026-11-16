@@ -30,7 +30,7 @@ backend/
     middlewares/     autenticación, permisos, validación, errores
     modulos/         auth, usuarios, clientes, pacientes, cola, visitas,
                      registros, controles, adjuntos, historia, asistente,
-                     cobros, auditoria
+                     cobros, precios, auditoria
     utils/
   tests/
 frontend/
@@ -87,12 +87,19 @@ La lógica de negocio vive en el servicio, nunca en las rutas.
     en solo lectura, pero solo veterinarios y admin crean, editan o anulan lo
     clínico. La entrega de la historia a un titular se audita con la acción
     `exportar`.
-11. Cobros: una visita cerrada se cobra una sola vez, con total manual. Al
-    cerrar la visita, el ingreso pasa a `esperando_cobro`; cuando el cobro queda
-    pagado, pasa a `atendido`. Sin cargo = total 0 con observación obligatoria.
-    Las deudas son cobros activos con saldo. Cobros y pagos se anulan con motivo
-    y solo admin puede hacerlo. El cierre del día se calcula y se imprime, no se
+11. Cobros: una visita cerrada se cobra una sola vez, con total manual o con
+    detalle por ítem. Al cerrar la visita, el ingreso pasa a
+    `esperando_cobro`; cuando el cobro queda pagado, pasa a `atendido`. Sin
+    cargo = total 0 con observación obligatoria. Las deudas son cobros activos
+    con saldo. Corregir el total o el detalle exige motivo y no puede dejar el
+    total por debajo de lo ya pagado. Cobros y pagos se anulan con motivo y solo
+    admin puede hacerlo. El cierre del día se calcula y se imprime, no se
     guarda.
+12. Lista de precios: los tres roles la consultan; solo admin crea, edita,
+    desactiva o reactiva precios. Toda edición exige motivo y queda en
+    `precio_historial` y en la auditoría. Los ítems del cobro guardan un
+    snapshot de nombre e importe, así que cambiar la lista no altera cobros ya
+    generados. Un cobro detallado se edita con ítems, no solo con total.
 
 ## Seguridad
 

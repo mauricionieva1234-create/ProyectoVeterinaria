@@ -6,7 +6,8 @@ las migraciones, los seeds, el inicio de sesión con cookie, los permisos por ro
 la auditoría, la administración de usuarios, clientes, pacientes, cola, visitas,
 registros clínicos, historia clínica completa y un asistente local de consultas.
 La **etapa 2** agrega el cobro de visitas, los pagos por medio, las deudas y el
-cierre diario de caja.
+cierre diario de caja. La **etapa 3** suma la lista de precios con historial y el
+detalle del cobro por ítem.
 
 La fuente de verdad del dominio es [`docs/modelo-de-datos.md`](docs/modelo-de-datos.md).
 
@@ -229,7 +230,8 @@ veterinaria/
 │   ├── modelo-de-datos.md Fuente de verdad del dominio
 │   ├── endurecimiento.md  Mejoras de robustez, accesibilidad y backups
 │   ├── plan-fase-0-1.md   Plan aprobado de las primeras fases
-│   └── plan-etapa-2.md    Plan aprobado de cobros y caja
+│   ├── plan-etapa-2.md    Plan aprobado de cobros y caja
+│   └── plan-etapa-3.md    Plan aprobado de precios y detalle del cobro
 ├── backend/
 │   ├── migrations/        SQL numerado de node-pg-migrate
 │   ├── scripts/           Creación de bases, migraciones, seeds y backup
@@ -295,12 +297,14 @@ principales:
 - [x] **Asistente local:** consultas por reglas, con sesión y en solo lectura.
 - [x] **Etapa 2 (cobros y caja):** cobro por visita, pagos por medio, deudas,
       anulación auditada y cierre diario imprimible.
+- [x] **Etapa 3 (precios y detalle):** lista de precios con historial, ítems con
+      snapshot, total calculado y detalle del cobro desde la caja.
 - [x] **Endurecimiento:** confirmación de fusiones, modales accesibles, carga por
       rutas, backups verificables y prueba de flujo completo.
-- [ ] **Próximas etapas:** lista de precios con historial, detalle por ítem,
-      venta de productos, stock y reportes.
+- [ ] **Próximas etapas:** venta de productos, stock y reportes.
 
 Los detalles de las próximas fases están en
 [`docs/plan-fase-0-1.md`](docs/plan-fase-0-1.md), el alcance implementado de
-cobros en [`docs/plan-etapa-2.md`](docs/plan-etapa-2.md) y las mejoras de
-robustez en [`docs/endurecimiento.md`](docs/endurecimiento.md).
+cobros en [`docs/plan-etapa-2.md`](docs/plan-etapa-2.md), el de precios y detalle
+en [`docs/plan-etapa-3.md`](docs/plan-etapa-3.md) y las mejoras de robustez en
+[`docs/endurecimiento.md`](docs/endurecimiento.md).
