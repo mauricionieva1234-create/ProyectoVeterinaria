@@ -8,7 +8,7 @@ import * as repositorio from './repositorio.js';
 
 const ESTADOS_FINALES = ['realizado', 'cancelado', 'reprogramado'];
 
-function aControlPublico(fila) {
+export function aControlPublico(fila) {
   return {
     id: fila.id,
     pacienteId: fila.paciente_id,
@@ -51,7 +51,7 @@ function aControlPublico(fila) {
   };
 }
 
-function aAvisoPublico(fila) {
+export function aAvisoPublico(fila) {
   return {
     id: fila.id,
     controlId: fila.control_id,

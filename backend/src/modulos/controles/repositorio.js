@@ -268,6 +268,34 @@ export async function listarAvisos(controlId, cliente) {
   return rows;
 }
 
+// Controles y avisos de todo el paciente para la historia clínica completa.
+export async function listarControlesDePaciente(pacienteId, cliente) {
+  const { rows } = await ejecutar(
+    `SELECT ${CAMPOS_CONTROL}
+     FROM control c
+     ${JOINS_CONTROL}
+     WHERE c.paciente_id = $1 AND c.anulado = false
+     ORDER BY c.fecha_control DESC, c.id DESC`,
+    [pacienteId],
+    cliente,
+  );
+  return rows;
+}
+
+export async function listarAvisosDePaciente(pacienteId, cliente) {
+  const { rows } = await ejecutar(
+    `SELECT ${CAMPOS_AVISO}
+     FROM aviso_control a
+     JOIN control c ON c.id = a.control_id
+     JOIN usuario u ON u.id = a.realizado_por
+     WHERE c.paciente_id = $1 AND c.anulado = false AND a.anulado = false
+     ORDER BY a.realizado_en DESC, a.id DESC`,
+    [pacienteId],
+    cliente,
+  );
+  return rows;
+}
+
 export async function buscarAvisoPorId(id, cliente) {
   const { rows } = await ejecutar(
     `SELECT ${CAMPOS_AVISO}

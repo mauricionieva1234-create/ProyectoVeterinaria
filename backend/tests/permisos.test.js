@@ -54,14 +54,20 @@ describe('permisos por rol', () => {
     cookieRecepcion = extraerCookie(recepcion);
   });
 
-  it('el mapa de permisos no le da acceso clínico a recepción', () => {
+  it('el mapa de permisos no le da acceso clínico de escritura a recepción', () => {
     expect(tienePermiso('recepcion', 'visitas.ver_clinico')).toBe(false);
     expect(tienePermiso('recepcion', 'visitas.editar')).toBe(false);
+    expect(tienePermiso('recepcion', 'registros.crear')).toBe(false);
     expect(tienePermiso('recepcion', 'usuarios.ver')).toBe(false);
     expect(tienePermiso('recepcion', 'auditoria.ver')).toBe(false);
 
+    // La lectura y la exportación de la historia son un permiso aparte.
+    expect(tienePermiso('recepcion', 'historia.ver')).toBe(true);
+    expect(tienePermiso('recepcion', 'historia.exportar')).toBe(true);
+
     expect(tienePermiso('veterinario', 'visitas.ver_clinico')).toBe(true);
     expect(tienePermiso('veterinario', 'visitas.editar')).toBe(true);
+    expect(tienePermiso('veterinario', 'historia.ver')).toBe(true);
     expect(tienePermiso('veterinario', 'usuarios.ver')).toBe(false);
 
     expect(tienePermiso('admin', 'usuarios.ver')).toBe(true);

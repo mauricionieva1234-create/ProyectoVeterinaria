@@ -105,7 +105,7 @@ export function aMedicacionPublica(fila) {
   };
 }
 
-function aNotaPublica(fila) {
+export function aNotaPublica(fila) {
   return {
     id: fila.id,
     visitaId: fila.visita_id,

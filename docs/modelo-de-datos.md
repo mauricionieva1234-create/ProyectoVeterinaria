@@ -46,7 +46,7 @@ Borrador v1 · 8 de noviembre de 2026 · Motor de base de datos: PostgreSQL
 | usuario_id | referencia | Sí | Quién hizo la acción |
 | entidad | texto | Sí | Nombre de la tabla afectada |
 | entidad_id | entero | Sí | |
-| accion | lista | Sí | crear, editar, anular, unir, ver_sensible |
+| accion | lista | Sí | crear, editar, anular, unir, ver_sensible, exportar |
 | antes | JSON | No | Estado previo |
 | despues | JSON | No | Estado posterior |
 | fecha | fecha-hora | Sí | |
@@ -212,7 +212,8 @@ Todos llevan `paciente_id` (obligatorio) y `visita_id` (opcional, porque una vac
 | Marcar posible urgencia | Sí | Sí | Sí |
 | Confirmar urgencia | No | Sí | Sí |
 | Crear y editar visitas y registros clínicos | No | Sí | Sí |
-| Ver anamnesis y medicación | No | Sí | Sí |
+| Ver la historia clínica completa (solo lectura) | Sí | Sí | Sí |
+| Exportar o imprimir la historia clínica (queda registrado) | Sí | Sí | Sí |
 | Ver controles y gestionar avisos | Sí | Sí | Sí |
 | Anular registros clínicos (con motivo) | No | Sí | Sí |
 | Unir clientes duplicados | No | No | Sí |
@@ -229,6 +230,7 @@ Todos llevan `paciente_id` (obligatorio) y `visita_id` (opcional, porque una vac
 6. **Controles.** Se crean desde la visita. La lista de controles a recordar muestra los pendientes de hoy y de mañana, con teléfono y franja. Si pasa la fecha sin realizarse, pasan a ausente y aparecen en una lista para volver a contactar. Reprogramar crea un control nuevo y deja el original como reprogramado.
 7. **Unión de duplicados.** Solo el administrador. Reasigna pacientes, visitas y registros al cliente que se conserva y deja `fusionado_en_cliente_id` en el otro.
 8. **Anulación en lugar de borrado.** Los registros clínicos no se eliminan.
+9. **Historia clínica para el cliente.** Recepción puede ver la historia clínica completa en solo lectura, pero no crear, editar ni anular nada clínico. Cuando un titular la pide, se verifica su documento, se imprime o se exporta, y la entrega queda registrada en la auditoría (acción exportar, con a quién se entregó).
 
 ## 7. Cómo se engancha la etapa 2 (cobros)
 

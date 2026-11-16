@@ -32,6 +32,8 @@ export const TODAS_LAS_ACCIONES = Object.freeze([
   'visitas.crear',
   'visitas.editar',
   'visitas.anular',
+  'historia.ver',
+  'historia.exportar',
   'registros.ver',
   'registros.crear',
   'registros.editar',
@@ -69,6 +71,8 @@ const PERMISOS_POR_ROL = {
     'visitas.crear',
     'visitas.editar',
     'visitas.anular',
+    'historia.ver',
+    'historia.exportar',
     'registros.ver',
     'registros.crear',
     'registros.editar',
@@ -82,8 +86,9 @@ const PERMISOS_POR_ROL = {
     'adjuntos.crear',
     'adjuntos.anular',
   ],
-  // Recepción trabaja con datos administrativos y la cola. No accede a lo
-  // clínico: nada de anamnesis, medicación, diagnósticos ni edición de visitas.
+  // Recepción trabaja con datos administrativos y la cola. Puede leer la
+  // historia clínica completa y exportarla, pero no crear, editar ni anular
+  // nada clínico.
   recepcion: [
     'catalogos.ver',
     'clientes.ver',
@@ -97,6 +102,8 @@ const PERMISOS_POR_ROL = {
     'cola.crear',
     'cola.editar',
     'cola.marcar_urgencia',
+    'historia.ver',
+    'historia.exportar',
     'controles.ver',
     'avisos.ver',
     'avisos.crear',

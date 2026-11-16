@@ -77,8 +77,9 @@ La lógica de negocio vive en el servicio, nunca en las rutas.
    registros, y marca `fusionado_en_cliente_id`.
 9. Nada clínico se borra: se anula con `anulado`, `motivo_anulacion`,
    `anulado_por` y `anulado_en`.
-10. Recepción no ve anamnesis ni medicación; solo veterinarios y admin editan lo
-    clínico.
+10. Recepción puede leer la historia clínica completa, pero solo veterinarios y
+    admin crean, editan o anulan lo clínico. La entrega de la historia a un
+    titular se audita con la acción `exportar`.
 
 ## Seguridad
 

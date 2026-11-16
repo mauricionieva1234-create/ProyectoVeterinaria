@@ -93,6 +93,19 @@ export async function buscarVisitaActivaPorIngreso(ingresoId, cliente) {
   return rows[0] ?? null;
 }
 
+export async function listarVisitasDePaciente(pacienteId, cliente) {
+  const { rows } = await ejecutar(
+    `SELECT ${CAMPOS_VISITA}
+     FROM visita v
+     ${JOINS_VISITA}
+     WHERE v.paciente_id = $1 AND v.anulado = false
+     ORDER BY v.inicio_en DESC, v.id DESC`,
+    [pacienteId],
+    cliente,
+  );
+  return rows;
+}
+
 export async function listarVisitas(
   { pagina, limite, pacienteId, ingresoId, estado, desde, hasta },
   cliente,
@@ -371,6 +384,40 @@ export async function listarMedicacion(visitaId, cliente) {
      WHERE m.visita_id = $1 AND m.anulado = false
      ORDER BY m.id`,
     [visitaId],
+    cliente,
+  );
+  return rows;
+}
+
+// Lectura completa de la historia clínica: medicación y notas de todas las
+// visitas vigentes de un paciente, sin paginar.
+export async function listarMedicacionDePaciente(pacienteId, cliente) {
+  const { rows } = await ejecutar(
+    `SELECT ${CAMPOS_MEDICACION}
+     FROM medicacion m
+     JOIN visita v ON v.id = m.visita_id
+     WHERE v.paciente_id = $1 AND v.anulado = false AND m.anulado = false
+     ORDER BY m.visita_id, m.id`,
+    [pacienteId],
+    cliente,
+  );
+  return rows;
+}
+
+export async function listarNotasDePaciente(pacienteId, cliente) {
+  const { rows } = await ejecutar(
+    `SELECT n.id,
+            n.visita_id,
+            n.texto,
+            n.autor_id,
+            u.nombre_completo AS autor_nombre,
+            n.creado_en
+     FROM visita_nota n
+     JOIN visita v ON v.id = n.visita_id
+     JOIN usuario u ON u.id = n.autor_id
+     WHERE v.paciente_id = $1 AND v.anulado = false
+     ORDER BY n.creado_en DESC, n.id DESC`,
+    [pacienteId],
     cliente,
   );
   return rows;
