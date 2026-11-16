@@ -4,6 +4,7 @@ import { RutaAdmin } from '../componentes/RutaAdmin.jsx';
 import { RutaPermiso } from '../componentes/RutaPermiso.jsx';
 import { RutaProtegida } from '../componentes/RutaProtegida.jsx';
 import { Auditoria } from '../paginas/Auditoria.jsx';
+import { Caja } from '../paginas/Caja.jsx';
 import { Catalogos } from '../paginas/Catalogos.jsx';
 import { Clientes } from '../paginas/Clientes.jsx';
 import { Cola } from '../paginas/Cola.jsx';
@@ -38,6 +39,14 @@ export const router = createBrowserRouter([
       { path: 'no-autorizado', element: <NoAutorizado /> },
       { path: 'cola', element: <Cola /> },
       { path: 'cola/sin-cerrar', element: <IngresosSinCerrar /> },
+      {
+        path: 'caja',
+        element: (
+          <RutaPermiso permiso="caja.ver">
+            <Caja />
+          </RutaPermiso>
+        ),
+      },
       {
         path: 'visitas',
         element: (

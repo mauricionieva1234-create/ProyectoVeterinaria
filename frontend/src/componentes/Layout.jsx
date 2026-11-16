@@ -57,6 +57,11 @@ export function Layout() {
             <NavLink to="/cola/sin-cerrar" className={claseEnlace}>
               Sin cerrar
             </NavLink>
+            {permisos.includes('caja.ver') && (
+              <NavLink to="/caja" className={claseEnlace}>
+                Caja
+              </NavLink>
+            )}
             {permisos.includes('visitas.ver') && (
               <NavLink to="/visitas" className={claseEnlace}>
                 Visitas

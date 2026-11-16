@@ -45,6 +45,16 @@ export function enmascararDocumento(documento) {
   return `***.***.${limpio.slice(-3)}`;
 }
 
+// Fecha de hoy en la zona de Tucumán, en formato aaaa-mm-dd.
+export function fechaHoy() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: ZONA_HORARIA,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+}
+
 // Edad legible a partir de una fecha aaaa-mm-dd. La fecha de hoy se toma en la
 // zona de Tucumán para que el cambio de zona horaria no corra un día.
 export function calcularEdad(fecha) {

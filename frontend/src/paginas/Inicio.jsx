@@ -11,6 +11,13 @@ const ACCESOS = [
     badge: 'bg-amber-500',
   },
   {
+    to: '/caja',
+    titulo: 'Caja',
+    detalle: 'Cobros, pagos, deudas y cierre del día.',
+    clase: 'border-emerald-200 bg-emerald-50 hover:border-emerald-300 hover:bg-emerald-100',
+    badge: 'bg-emerald-500',
+  },
+  {
     to: '/clientes',
     titulo: 'Clientes',
     detalle: 'Datos administrativos y mascotas de cada dueño.',
@@ -62,7 +69,7 @@ export function Inicio() {
       <EncabezadoPagina
         tono="teal"
         titulo="Sistema de gestión veterinaria"
-        descripcion="Fase 4 lista: historia clínica con visitas, medicación, registros, controles, avisos y adjuntos. Recepción administra la cola y puede leer y exportar la historia completa sin editar nada clínico."
+        descripcion="Cobros y caja listos: visitas cerradas, pagos por medio, deudas y cierre del día. Recepción administra la cola y puede leer y exportar la historia completa sin editar nada clínico."
       />
 
       <Panel tono="teal" titulo="Estado del backend">
