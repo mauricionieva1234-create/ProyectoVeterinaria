@@ -132,7 +132,8 @@ describe('visitas clínicas', () => {
     const { rows } = await obtenerPool().query('SELECT estado FROM ingreso WHERE id = $1', [
       ingresoId,
     ]);
-    expect(rows[0].estado).toBe('atendido');
+    // Al cerrar, la visita queda esperando el cobro en caja.
+    expect(rows[0].estado).toBe('esperando_cobro');
     expect(await contarAuditoriaAccion('ingreso', ingresoId, 'editar')).toBeGreaterThan(0);
   });
 
