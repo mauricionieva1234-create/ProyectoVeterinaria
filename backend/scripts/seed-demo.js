@@ -31,6 +31,29 @@ const CLIENTES_DEMO = [
   },
 ];
 
+const PRECIOS_DEMO = [
+  {
+    nombre: 'Consulta clínica',
+    importe: 15000,
+    observaciones: 'Precio de demostración, sin valor real.',
+  },
+  {
+    nombre: 'Vacunación',
+    importe: 8000,
+    observaciones: 'Precio de demostración, sin valor real.',
+  },
+  {
+    nombre: 'Control clínico',
+    importe: 6000,
+    observaciones: 'Precio de demostración, sin valor real.',
+  },
+  {
+    nombre: 'Cirugía menor',
+    importe: 45000,
+    observaciones: 'Precio de demostración, sin valor real.',
+  },
+];
+
 const PACIENTES_DEMO = [
   {
     clienteDocumento: '90000001',
@@ -139,6 +162,42 @@ export async function ejecutarSeedDemo() {
          WHERE NOT EXISTS (SELECT 1 FROM cliente WHERE nro_documento = $3)`,
         [datos.nombre, datos.apellido, datos.documento, datos.telefono, datos.email],
       );
+    }
+
+    // Lista de precios de demostración. Si el precio ya existe, no se toca.
+    const { rows: admins } = await cliente.query(
+      "SELECT id FROM usuario WHERE rol = 'admin' AND activo ORDER BY id LIMIT 1",
+    );
+    const adminId = admins[0]?.id ?? null;
+
+    for (const precio of PRECIOS_DEMO) {
+      const { rows: existentes } = await cliente.query(
+        `SELECT id FROM precio
+         WHERE activo = true
+           AND lower(fn_sin_tildes(nombre)) = lower(fn_sin_tildes($1))
+         LIMIT 1`,
+        [precio.nombre],
+      );
+
+      if (existentes.length > 0) continue;
+
+      const { rows: creado } = await cliente.query(
+        `INSERT INTO precio (nombre, importe, observaciones, creado_por, actualizado_por)
+         VALUES ($1, $2, $3, $4, $4)
+         RETURNING id`,
+        [precio.nombre, precio.importe, precio.observaciones, adminId],
+      );
+
+      if (adminId) {
+        await cliente.query(
+          `INSERT INTO precio_historial (
+             precio_id, nombre_anterior, nombre_nuevo,
+             importe_anterior, importe_nuevo, motivo, cambiado_por
+           )
+           VALUES ($1, NULL, $2, NULL, $3, 'Precio inicial (demo)', $4)`,
+          [creado[0].id, precio.nombre, precio.importe, adminId],
+        );
+      }
     }
 
     // Pacientes

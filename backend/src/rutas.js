@@ -14,6 +14,7 @@ import { rutasControles } from './modulos/controles/rutas.js';
 import { rutasAdjuntos } from './modulos/adjuntos/rutas.js';
 import { rutasAsistente } from './modulos/asistente/rutas.js';
 import { rutasCobros } from './modulos/cobros/rutas.js';
+import { rutasPrecios } from './modulos/precios/rutas.js';
 
 export const rutas = Router();
 
@@ -32,3 +33,4 @@ rutas.use('/controles', rutasControles);
 rutas.use('/adjuntos', rutasAdjuntos);
 rutas.use('/asistente', rutasAsistente);
 rutas.use('/cobros', rutasCobros);
+rutas.use('/precios', rutasPrecios);
