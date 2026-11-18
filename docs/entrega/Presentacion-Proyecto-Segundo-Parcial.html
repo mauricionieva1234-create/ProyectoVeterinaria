@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Documento de presentación de proyecto · Segundo parcial</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+
+  :root {
+    --oscuro: #0f172a;
+    --cuerpo: #1e293b;
+    --apagado: #475569;
+    --acento: #0f766e;
+    --acento-claro: #ccfbf1;
+    --linea: #cbd5e1;
+    --fondo-codigo: #f1f5f9;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: var(--cuerpo);
+  }
+
+  h1, h2, h3 { color: var(--oscuro); line-height: 1.2; break-after: avoid; }
+  h1 { font-size: 22pt; margin: 0 0 6mm 0; }
+  h2 {
+    font-size: 14.5pt;
+    margin: 0 0 5mm 0;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid var(--acento);
+  }
+  h3 { font-size: 11.5pt; margin: 6mm 0 2mm 0; color: var(--acento); }
+  p { margin: 0 0 3mm 0; text-align: justify; }
+  strong { color: var(--oscuro); }
+  ul, ol { margin: 0 0 3mm 0; padding-left: 6mm; }
+  li { margin-bottom: 1.5mm; break-inside: avoid; }
+
+  .seccion { break-before: page; }
+  .sin-salto { break-before: auto; }
+
+  .portada { padding-top: 48mm; }
+  .etiqueta {
+    display: inline-block;
+    background: var(--acento-claro);
+    color: #115e59;
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1.5mm 3mm;
+    border-radius: 2mm;
+    margin-bottom: 6mm;
+  }
+  .subtitulo { font-size: 13pt; color: var(--apagado); margin-bottom: 18mm; }
+  .ficha { width: 100%; border-collapse: collapse; font-size: 10.5pt; }
+  .ficha td { padding: 2.6mm 0; border-bottom: 1px solid var(--linea); vertical-align: top; }
+  .ficha td:first-child { width: 42mm; font-weight: 700; color: var(--acento); }
+  .ficha td:last-child { color: var(--oscuro); }
+  .pie-portada { margin-top: 26mm; font-size: 9.5pt; color: var(--apagado); }
+  .pie-portada span { display: block; }
+
+  .tabla { width: 100%; border-collapse: collapse; margin: 2mm 0 5mm 0; font-size: 9pt; }
+  .tabla th {
+    background: var(--acento);
+    color: #fff;
+    text-align: left;
+    padding: 2mm 2.5mm;
+    font-weight: 700;
+  }
+  .tabla td { padding: 2mm 2.5mm; border-bottom: 1px solid var(--linea); vertical-align: top; }
+  .tabla tr { break-inside: avoid; }
+  thead { display: table-header-group; }
+  .tabla tr:nth-child(even) td { background: #f8fafc; }
+
+  .codigo {
+    background: var(--fondo-codigo);
+    border: 1px solid var(--linea);
+    border-left: 3px solid var(--acento);
+    border-radius: 1.5mm;
+    padding: 2.5mm 3mm;
+    margin: 2mm 0 4mm 0;
+    break-inside: avoid;
+  }
+  .ruta {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 8pt;
+    color: #0f766e;
+    font-weight: 700;
+    margin-bottom: 1.5mm;
+  }
+  pre {
+    margin: 0;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 8.2pt;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #0f172a;
+  }
+  .nota {
+    background: #f0fdfa;
+    border: 1px solid #99f6e4;
+    border-radius: 1.5mm;
+    padding: 3mm 4mm;
+    margin: 3mm 0 5mm 0;
+    font-size: 9.5pt;
+    break-inside: avoid;
+  }
+  .dos-columnas { display: flex; gap: 6mm; align-items: flex-start; }
+  .dos-columnas > div { flex: 1; }
+  .diagrama { width: 100%; height: auto; margin: 3mm 0 4mm 0; }
+  .pie { font-size: 8.8pt; color: var(--apagado); text-align: center; margin-top: 6mm; }
+  a { color: var(--acento); }
+</style>
+</head>
+<body>
+
+<!-- ============ PORTADA ============ -->
+<section class="portada">
+  <div class="etiqueta">Documento de presentación · Segundo parcial</div>
+  <h1>Sistema de gestión veterinaria</h1>
+  <div class="subtitulo">ProyectoVeterinaria · Metodología de Sistemas II</div>
+
+  <table class="ficha">
+    <tr><td>Proyecto</td><td>Sistema de gestión veterinaria (ProyectoVeterinaria)</td></tr>
+    <tr><td>Materia</td><td>Metodología de Sistemas II</td></tr>
+    <tr><td>Integrantes del grupo</td><td>Mauricio Nieva</td></tr>
+    <tr><td>Legajo</td><td>63984</td></tr>
+    <tr><td>Comisión</td><td>11</td></tr>
+    <tr><td>Repositorio</td><td>https://github.com/mauricionieva1234-create/ProyectoVeterinaria</td></tr>
+  </table>
+
+  <div class="pie-portada">
+    <span>Trabajo práctico presentado como segundo parcial</span>
+    <span>Tucumán, noviembre de 2026</span>
+  </div>
+</section>
+
+<!-- ============ INTRODUCCIÓN ============ -->
+<section class="seccion">
+  <h2>1. Introducción</h2>
+
+  <p>Este proyecto consiste en una aplicación web para la gestión diaria de una clínica veterinaria pequeña. El sistema permite registrar el ingreso de los pacientes, organizar la cola de espera y las urgencias, acompañar la visita clínica, conservar la historia completa, administrar controles y avisos, cobrar las visitas y emitir el cierre de caja del día.</p>
+
+  <p>La idea fue resolver un problema concreto y reconocible: en una veterinaria, la información suele estar repartida entre planillas, papeles y la memoria del personal. Eso dificulta saber quién falta atender, qué pasó en una visita anterior, cuánto se debe o cuánto se recaudó. Un sistema único, con reglas claras y permisos por rol, ordena ese flujo y evita perder información.</p>
+
+  <p>El desarrollo se organizó en etapas, cada una cerrada con sus pruebas y su documentación:</p>
+  <ol>
+    <li><strong>Base y seguridad:</strong> monorepo, endpoint de salud, migraciones, seeds, inicio de sesión con cookie, permisos por rol, auditoría y administración de usuarios.</li>
+    <li><strong>Catálogos y fichas:</strong> especies, razas, franjas horarias, clientes y pacientes, con búsqueda previa para evitar duplicados.</li>
+    <li><strong>Recepción:</strong> cola diaria, urgencias, alta rápida, controles y avisos.</li>
+    <li><strong>Clínica:</strong> visitas con versiones, medicación, registros, adjuntos, historia clínica imprimible y asistente local de consultas.</li>
+    <li><strong>Cobros y caja:</strong> cobro por visita, pagos por medio, deudas, anulaciones auditadas y cierre diario calculado.</li>
+    <li><strong>Lista de precios y detalle:</strong> precios con historial, ítems con snapshot, total calculado y detalle visible desde la caja.</li>
+    <li><strong>Endurecimiento:</strong> accesibilidad de modales, carga por rutas, backups verificables y prueba del flujo completo.</li>
+  </ol>
+
+  <p>El resultado es un sistema demostrable de principio a fin, con una arquitectura explicable y un código preparado para seguir creciendo.</p>
+</section>
+
+<!-- ============ POR QUÉ ELEGIMOS EL PROYECTO ============ -->
+<section class="seccion">
+  <h2>2. ¿Por qué elegimos este proyecto?</h2>
+
+  <p>Elegimos una veterinaria porque es un dominio cotidiano, fácil de entender y con suficientes reglas de negocio para poner en práctica casi todo lo visto en la materia. No hace falta explicar qué es una urgencia o un control, pero sí decidir cómo se modelan: quién puede confirmarla, qué pasa si se reprograma, cómo se conserva lo que se escribió en una visita.</p>
+
+  <h3>Razones principales</h3>
+  <ul>
+    <li><strong>Problema real y cercano.</strong> Permite mostrar una aplicación útil, no un ejercicio aislado: alta de fichas, cola, atención, cobro y caja forman un flujo completo.</li>
+    <li><strong>Reglas de negocio ricas.</strong> Cerrar una visita exige motivo; cada edición genera una versión; nada clínico se borra, se anula; el cierre del día se calcula, no se guarda. Son reglas que obligan a pensar el modelo y no solo la interfaz.</li>
+    <li><strong>Cobertura del temario.</strong>modelado relacional, SQL, API REST, arquitectura en capas, patrones, validaciones, autenticación, pruebas y control de versiones aparecen de forma natural.</li>
+    <li><strong>Crecimiento por módulos.</strong> Cada etapa agregó funcionalidad sin reescribir lo anterior, gracias a la separación entre rutas, servicios y repositorios.</li>
+    <li><strong>Trabajo con datos sensibles.</strong> El proyecto usa exclusivamente datos ficticios, enmascara documentos en los listados y no registra información personal en logs.</li>
+  </ul>
+
+  <div class="nota"><strong>Decisión de alcance:</strong> se dejaron fuera la venta de productos, el control de stock y la facturación fiscal. Incluirlos habría desviado el esfuerzo del objetivo principal: ordenar la atención clínica y el cobro de las visitas.</div>
+
+  <p>En síntesis: es un proyecto lo bastante simple para ser demostrado en clase y lo bastante completo para justificar decisiones de arquitectura, diseño y calidad.</p>
+</section>
+
+<!-- ============ LENGUAJES Y TECNOLOGÍAS ============ -->
+<section class="seccion">
+  <h2>3. Lenguajes y tecnologías utilizadas</h2>
+
+  <p>Se trabajó con <strong>JavaScript en todo el stack</strong>, usando módulos ES (ESM). Esto permitió compartir convenciones y esquemas de validación entre el frontend y el backend sin cambiar de lenguaje. A continuación se detalla cada tecnología y su relación con los contenidos vistos en la materia.</p>
+
+  <table class="tabla">
+    <thead>
+      <tr><th style="width:24%">Tecnología</th><th style="width:30%">Para qué se usó</th><th>Relación con la materia</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>JavaScript (ESM)</td><td>Lenguaje principal del frontend y del backend.</td><td>Modularidad, abstracción, funciones, estructuras de datos y manejo de errores.</td></tr>
+      <tr><td>Node.js 22</td><td>Entorno de ejecución del servidor.</td><td>Modelo cliente-servidor, E/S no bloqueante, ejecución de servicios HTTP.</td></tr>
+      <tr><td>Express 5</td><td>API REST y cadena de middleware.</td><td>Diseño de interfaces, separación de responsabilidades, control de flujo de una petición.</td></tr>
+      <tr><td>PostgreSQL</td><td>Base de datos relacional; fechas en UTC, snapshots en JSONB.</td><td>Modelo entidad-relación, SQL, integridad referencial, transacciones e índices.</td></tr>
+      <tr><td>node-pg-migrate</td><td>Migraciones SQL numeradas y reversibles.</td><td>Evolución controlada del esquema y control de versiones de la base.</td></tr>
+      <tr><td>React 19</td><td>Interfaz por componentes con hooks.</td><td>Composición, estado, reutilización y separación de capas en la presentación.</td></tr>
+      <tr><td>Vite 8</td><td>Compilación y servidor de desarrollo del frontend.</td><td>Herramientas de desarrollo y despliegue de aplicaciones web.</td></tr>
+      <tr><td>Tailwind CSS 4</td><td>Estilos por utilidades y diseño consistente.</td><td>Interfaz, accesibilidad y mantenibilidad del código visual.</td></tr>
+      <tr><td>React Router 7</td><td>Rutas de la aplicación y guardas por sesión y permiso.</td><td>Navegación y control de acceso en el cliente.</td></tr>
+      <tr><td>TanStack Query 5</td><td>Caché y sincronización de datos del servidor.</td><td>Gestión del estado remoto y actualización de vistas.</td></tr>
+      <tr><td>React Hook Form + Zod</td><td>Formularios y validación con mensajes en español.</td><td>Validación de entradas y experiencias de usuario consistentes.</td></tr>
+      <tr><td>Zod (backend)</td><td>Esquemas de validación de body y query.</td><td>Definición de contratos de datos antes de llegar al servicio.</td></tr>
+      <tr><td>bcryptjs, JWT, helmet, express-rate-limit</td><td>Contraseñas, sesión con cookie httpOnly, cabeceras de seguridad y límite de intentos.</td><td>Seguridad: autenticación, autorización y protección de la API.</td></tr>
+      <tr><td>Vitest, Supertest, Testing Library</td><td>Pruebas de backend, de API y de interfaz.</td><td>Verificación, regresión y confianza en las reglas críticas.</td></tr>
+      <tr><td>ESLint y Prettier</td><td>Análisis estático y formato automático.</td><td>Buenas prácticas, consistencia y calidad de código.</td></tr>
+      <tr><td>npm workspaces</td><td>Monorepo con paquetes <em>backend</em> y <em>frontend</em>.</td><td>Organización del código y gestión de dependencias.</td></tr>
+    </tbody>
+  </table>
+
+  <p>Como se ve, cada herramienta responde a una decisión de diseño y no se eligió por moda: por ejemplo, se usa SQL parametrizado con <code>pg</code> en lugar de un ORM para que las consultas sean explícitas y auditables, y se valida con Zod en los bordes del sistema para que los datos inválidos no lleguen a la lógica de negocio.</p>
+</section>
+
+<!-- ============ ARQUITECTURAS DE SOFTWARE ============ -->
+<section class="seccion">
+  <h2>4. Arquitecturas de software</h2>
+
+  <p>La solución sigue una <strong>arquitectura cliente-servidor</strong>: un navegador consume una API REST sobre HTTP. El backend es un <strong>monolito modular</strong> organizado en <strong>capas</strong>, y el frontend está dividido por responsabilidades. No se usaron microservicios ni arquitectura hexagonal pura: para el tamaño del proyecto y del equipo, esa complejidad no aportaba beneficios.</p>
+
+  <svg class="diagrama" viewBox="0 0 680 330" role="img" aria-label="Diagrama de capas del sistema">
+    <defs>
+      <marker id="flecha" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L7,3 z" fill="#475569"/>
+      </marker>
+    </defs>
+    <rect x="150" y="6" width="380" height="42" rx="6" fill="#ccfbf1" stroke="#0f766e"/>
+    <text x="340" y="27" text-anchor="middle" font-size="13" font-weight="bold" fill="#115e59">FRONTEND · React + Vite</text>
+    <text x="340" y="41" text-anchor="middle" font-size="10" fill="#115e59">páginas · componentes · hooks · api · rutas</text>
+
+    <line x1="340" y1="48" x2="340" y2="66" stroke="#475569" stroke-width="1.5" marker-end="url(#flecha)"/>
+    <text x="355" y="61" font-size="9" fill="#475569">HTTP / JSON · REST</text>
+
+    <rect x="150" y="68" width="380" height="38" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+    <text x="340" y="92" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">BACKEND · Express</text>
+
+    <rect x="150" y="116" width="380" height="38" rx="6" fill="#fff" stroke="#94a3b8"/>
+    <text x="340" y="140" text-anchor="middle" font-size="11" fill="#0f172a">RUTAS → CONTROLADOR</text>
+    <text x="340" y="151" text-anchor="middle" font-size="9" fill="#475569">autenticación · permisos · validación · respuesta HTTP</text>
+
+    <line x1="340" y1="154" x2="340" y2="170" stroke="#475569" stroke-width="1.5" marker-end="url(#flecha)"/>
+
+    <rect x="150" y="172" width="380" height="38" rx="6" fill="#fff" stroke="#0f766e"/>
+    <text x="340" y="196" text-anchor="middle" font-size="11" font-weight="bold" fill="#0f766e">SERVICIO · reglas de negocio</text>
+
+    <line x1="340" y1="210" x2="340" y2="226" stroke="#475569" stroke-width="1.5" marker-end="url(#flecha)"/>
+
+    <rect x="150" y="228" width="380" height="38" rx="6" fill="#fff" stroke="#94a3b8"/>
+    <text x="340" y="252" text-anchor="middle" font-size="11" fill="#0f172a">REPOSITORIO · SQL parametrizado</text>
+
+    <line x1="340" y1="266" x2="340" y2="282" stroke="#475569" stroke-width="1.5" marker-end="url(#flecha)"/>
+
+    <rect x="150" y="284" width="380" height="38" rx="6" fill="#e2e8f0" stroke="#475569"/>
+    <text x="340" y="308" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">POSTGRESQL · tablas, FK, CHECK, índices</text>
+
+    <text x="545" y="140" font-size="9" fill="#475569">Cadena de</text>
+    <text x="545" y="151" font-size="9" fill="#475569">middleware</text>
+    <text x="545" y="196" font-size="9" fill="#475569">Transacciones</text>
+    <text x="545" y="207" font-size="9" fill="#475569">y auditoría</text>
+    <text x="545" y="252" font-size="9" fill="#475569">Sin ORM</text>
+  </svg>
+
+  <h3>Capas del backend</h3>
+  <table class="tabla">
+    <thead><tr><th style="width:24%">Capa</th><th>Responsabilidad</th></tr></thead>
+    <tbody>
+      <tr><td>Rutas</td><td>Definen los endpoints, aplican autenticación, permisos y validación, y delegan en el controlador.</td></tr>
+      <tr><td>Controlador</td><td>Traduce la petición HTTP en una llamada al servicio y devuelve la respuesta con el código adecuado.</td></tr>
+      <tr><td>Servicio</td><td>Contiene las reglas de negocio: estados, totales, motivos obligatorios, anulaciones y auditoría.</td></tr>
+      <tr><td>Repositorio</td><td>Concentra el SQL parametrizado. No decide reglas, solo persiste y consulta.</td></tr>
+      <tr><td>Base de datos</td><td>Garantiza integridad con claves foráneas, restricciones, índices y transacciones.</td></tr>
+    </tbody>
+  </table>
+
+  <p>La cadena de middleware se declara de forma explícita en cada módulo, de modo que una petición pase por autenticación, permiso y validación antes de llegar al controlador:</p>
+
+  <div class="codigo">
+    <div class="ruta">backend/src/modulos/precios/rutas.js</div>
+<pre>rutasPrecios.use(requiereAutenticacion);
+
+rutasPrecios.get(
+  '/',
+  requierePermiso('precios.ver'),
+  validarConsulta(esquemaListadoPrecios),
+  controlador.listar,
+);
+
+rutasPrecios.patch(
+  '/:id',
+  requierePermiso('precios.editar'),
+  validar(esquemaActualizarPrecio),
+  controlador.actualizar,
+);</pre>
+  </div>
+
+  <p>En el frontend, las páginas se cargan de forma diferida (<em>lazy loading</em>) y están protegidas por guardas: <code>RutaProtegida</code> exige sesión, <code>RutaPermiso</code> exige un permiso concreto y <code>RutaAdmin</code> restringe las funciones de administración. El cliente HTTP es único y centraliza errores y credenciales.</p>
+
+  <div class="nota"><strong>Decisión importante:</strong> el backend es la única autoridad en materia de permisos. Que el frontend oculte un botón es una comodidad visual; si un usuario llama a la API sin permiso, el middleware responde 403.</div>
+</section>
+
+<!-- ============ BUENAS PRÁCTICAS Y PATRONES ============ -->
+<section class="seccion">
+  <h2>5. Buenas prácticas de programación y patrones aplicados</h2>
+
+  <p>Se priorizó el código simple y legible antes que el ingenioso. Las reglas del dominio se escribieron en español, los comentarios explican el <strong>por qué</strong> de lo no obvio y cada módulo se organizó de la misma manera. Los patrones y prácticas más visibles son:</p>
+
+  <table class="tabla">
+    <thead><tr><th style="width:28%">Patrón o práctica</th><th style="width:32%">Dónde está</th><th>Beneficio</th></tr></thead>
+    <tbody>
+      <tr><td>Repository</td><td><code>repositorio.js</code> de cada módulo</td><td>Aísla el SQL; el servicio no conoce la base de datos.</td></tr>
+      <tr><td>Service Layer</td><td><code>servicio.js</code></td><td>Concentra las reglas de negocio en un solo lugar.</td></tr>
+      <tr><td>DTO / mapeo público</td><td><code>aCobroPublico</code>, <code>aPrecioPublico</code></td><td>Controla qué se expone y convierte tipos de la base.</td></tr>
+      <tr><td>Middleware chain</td><td>Rutas de Express</td><td>Compone autenticación, permisos y validación.</td></tr>
+      <tr><td>Transacción / unidad de trabajo</td><td><code>utils/transaccion.js</code></td><td>El cobro, sus ítems y la auditoría se guardan juntos o no se guarda nada.</td></tr>
+      <tr><td>Snapshot</td><td><code>cobro_item</code></td><td>Cambiar la lista de precios no altera cobros ya realizados.</td></tr>
+      <tr><td>Anulación lógica e historial</td><td><code>anulado</code>, <code>precio_historial</code></td><td>Nada clínico se borra; siempre queda el antes y el después.</td></tr>
+      <tr><td>Guardas de ruta y cliente único</td><td>Frontend: <code>componentes/</code> y <code>api/cliente.js</code></td><td>Interfaz coherente y errores uniformes.</td></tr>
+      <tr><td>Validación en la frontera</td><td>Esquemas Zod</td><td>Datos inválidos se rechazan antes de entrar al servicio.</td></tr>
+      <tr><td>Configuración fuera del código</td><td><code>.env</code> e <code>.env.example</code></td><td>Secretos versionados por separado; <code>.env</code> nunca se commitea.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Repository y SQL parametrizado</h3>
+  <div class="codigo">
+    <div class="ruta">backend/src/modulos/precios/repositorio.js</div>
+<pre>export async function buscarPrecioPorId(id, cliente, { bloquear = false } = {}) {
+  const { rows } = await ejecutar(
+    `SELECT ${CAMPOS_PRECIO}
+     FROM precio p
+     WHERE p.id = $1
+     ${bloquear ? 'FOR UPDATE OF p' : ''}`,
+    [id],
+    cliente,
+  );
+  return rows[0] ?? null;
+}</pre>
+  </div>
+  <p>El valor viaja como parámetro <code>$1</code>, nunca concatenado. El parámetro <code>cliente</code> permite reutilizar la misma conexión dentro de una transacción.</p>
+
+  <h3>Servicio: reglas de negocio</h3>
+  <div class="codigo">
+    <div class="ruta">backend/src/modulos/cobros/servicio.js</div>
+<pre>// El subtotal se redondea por línea y el total suma esos subtotales. Así el
+// total del cobro coincide siempre con lo que muestra el detalle en la base.
+function totalDeItems(items) {
+  const subtotales = items.map((item) =&gt; redondear(item.cantidad * item.importeUnitario));
+  return redondear(subtotales.reduce((suma, valor) =&gt; suma + valor, 0));
+}
+
+const items = datos.items !== undefined ? normalizarItems(datos.items) : null;
+const total = items ? totalDeItems(items) : redondear(datos.total);
+const estado = total === 0 ? 'pagado' : 'pendiente';</pre>
+  </div>
+  <p>Acá se decide qué significa «cobrar»: con ítems el total se calcula, sin ítems se respeta el total manual, y un total cero con observación queda marcado como pagado. La ruta no sabe nada de esto.</p>
+
+  <h3>Transacciones</h3>
+  <div class="codigo">
+    <div class="ruta">backend/src/utils/transaccion.js</div>
+<pre>export async function conTransaccion(funcion) {
+  const cliente = await obtenerPool().connect();
+  try {
+    await cliente.query('BEGIN');
+    const resultado = await funcion(cliente);
+    await cliente.query('COMMIT');
+    return resultado;
+  } catch (error) {
+    await cliente.query('ROLLBACK');
+    throw error;
+  } finally {
+    cliente.release();
+  }
+}</pre>
+  </div>
+  <p>Es una forma simple de aplicar el principio ACID: si falla la auditoría después de crear un cobro, se revierte también el cobro.</p>
+
+  <h3>Validación con esquemas</h3>
+  <div class="codigo">
+    <div class="ruta">backend/src/modulos/precios/esquemas.js</div>
+<pre>// Toda edición exige motivo. Si cambia el nombre o el importe, además deja una
+// fila en el historial.
+export const esquemaActualizarPrecio = z
+  .object({
+    nombre: nombre.optional(),
+    importe: importe.optional(),
+    activo: z.boolean().optional(),
+    observaciones: textoOpcional(1000, 'Las observaciones son demasiado largas'),
+    motivo,
+  })
+  .refine(
+    (datos) =&gt; datos.nombre !== undefined || datos.importe !== undefined ||
+                datos.activo !== undefined || datos.observaciones !== undefined,
+    { message: 'No hay cambios para guardar' },
+  );</pre>
+  </div>
+
+  <h3>Control de acceso en la interfaz</h3>
+  <div class="codigo">
+    <div class="ruta">frontend/src/componentes/RutaPermiso.jsx</div>
+<pre>export function RutaPermiso({ permiso, children }) {
+  const { data, isPending } = useSesion();
+  if (isPending) return &lt;p role="status"&gt;Cargando sesión...&lt;/p&gt;;
+  if (!(data?.permisos ?? []).includes(permiso)) {
+    return &lt;Navigate to="/no-autorizado" replace /&gt;;
+  }
+  return children;
+}</pre>
+  </div>
+
+  <h3>Otras prácticas adoptadas</h3>
+  <ul>
+    <li>Convenciones uniformes: dominio en español, tablas en <code>snake_case</code> y términos técnicos estándar en inglés.</li>
+    <li>Commits chicos y frecuentes, en español, con prefijos <code>feat:</code>, <code>fix:</code>, <code>test:</code>, <code>docs:</code> y <code>chore:</code>.</li>
+    <li>Un plan escrito antes de cada etapa y una documentación del modelo de datos como fuente de verdad.</li>
+    <li>Formato de fecha y hora en español de Argentina, zona horaria de Tucumán.</li>
+    <li>Accesibilidad mínima: modales con foco atrapado, cierre con Escape y nombre accesible.</li>
+    <li>Datos de prueba siempre ficticios, nunca reales.</li>
+  </ul>
+</section>
+
+<!-- ============ TESTING ============ -->
+<section class="seccion">
+  <h2>6. Testing</h2>
+
+  <p>Se adoptó una estrategia de pruebas automáticas en dos niveles, apoyada en <strong>Vitest</strong>:</p>
+
+  <h3>Backend: pruebas de integración de la API</h3>
+  <p>Con <strong>Supertest</strong> se levantan peticiones reales contra la aplicación Express, usando una base de datos <code>veterinaria_test</code> separada de la de desarrollo. Las migraciones se aplican una vez y las tablas se truncan entre archivos, de modo que cada prueba es independiente y nunca toca los datos de trabajo. Se comprueban códigos de respuesta, mensajes de error y efectos en la base.</p>
+
+  <div class="codigo">
+    <div class="ruta">backend/tests/precios.test.js</div>
+<pre>it('exige motivo y registra el antes y el después del cambio', async () =&gt; {
+  const sinMotivo = await agenteAdmin.patch(`/api/precios/${precioId}`).send({
+    importe: 18000,
+  });
+  expect(sinMotivo.status).toBe(400);
+
+  const editado = await agenteAdmin.patch(`/api/precios/${precioId}`).send({
+    nombre: 'Consulta clínica general ficticia',
+    importe: 18000,
+    motivo: 'Actualización ficticia de la lista',
+  });
+
+  expect(editado.status).toBe(200);
+  const detalle = await agenteAdmin.get(`/api/precios/${precioId}`);
+  expect(detalle.body.precio.historial).toHaveLength(2);
+  expect(await contarAuditoria('precio', precioId)).toBe(2);
+});</pre>
+  </div>
+
+  <h3>Frontend: pruebas de componentes y pantallas</h3>
+  <p>Con <strong>Testing Library</strong> y <strong>jsdom</strong> se prueban las pantallas desde la perspectiva del usuario: qué ve, qué puede hacer y qué mensaje aparece cuando intenta una acción sin permiso. Las peticiones se simulan con <code>vi.mock</code>, sin depender del servidor.</p>
+
+  <table class="tabla">
+    <thead><tr><th style="width:32%">Nivel</th><th style="width:26%">Herramientas</th><th>Qué se verificó</th></tr></thead>
+    <tbody>
+      <tr><td>API y reglas de negocio</td><td>Vitest + Supertest</td><td>Permisos por rol, duplicados sin tildes, historial de precios, total por ítems, pago parcial, sin cargo con observación y anulaciones.</td></tr>
+      <tr><td>Interfaz</td><td>Vitest + Testing Library</td><td>Listados, formularios, modales, historial, guardas de ruta y mensajes de validación.</td></tr>
+      <tr><td>Calidad estática</td><td>ESLint + Prettier</td><td>Sin errores de análisis ni diferencias de formato.</td></tr>
+      <tr><td>Compilación</td><td>Vite</td><td>Build de producción correcto.</td></tr>
+    </tbody>
+  </table>
+
+  <p>En la última verificación completa pasaron <strong>202 pruebas</strong> (130 de backend y 72 de frontend), junto con <code>npm run lint</code>, <code>npm run format:check</code> y <code>npm run build</code>.</p>
+
+  <div class="codigo">
+    <div class="ruta">PowerShell · comandos del proyecto</div>
+<pre>npm install
+npm run dev
+npm test
+npm run lint
+npm run format:check
+npm run build</pre>
+  </div>
+
+  <p>Además de las pruebas automáticas se hizo una prueba manual del flujo completo en el navegador: alta y edición de precios con historial, cobro detallado por ítem, pago parcial y consulta del detalle desde la caja.</p>
+</section>
+
+<!-- ============ CONCLUSIÓN ============ -->
+<section class="seccion">
+  <h2>7. Conclusión de la materia</h2>
+
+  <p>Metodología de Sistemas II permitió pasar de la idea de una aplicación a un sistema completo y justificable. El aprendizaje más importante no fue solo escribir código, sino tomar decisiones y saber explicarlas: por qué separar un servicio de un repositorio, por qué no borrar una visita, por qué calcular el total desde los ítems y por qué el permiso se comprueba en el servidor aunque el botón esté oculto.</p>
+
+  <p>Durante el desarrollo aparecieron situaciones que el temario ayuda a resolver: un cambio en la lista de precios no podía alterar cobros antiguos (se resolvió con un snapshot por ítem); una edición de precios debía conservar el motivo y el valor anterior (historial <em>append-only</em>); un cobro con pagos parciales no podía reducirse por debajo de lo ya pagado (regla en el servicio y transacción para mantener la coherencia). Cada una de esas decisiones quedó documentada y probada.</p>
+
+  <p>También quedó claro que la arquitectura no es un dibujo: es una herramienta para trabajar. Gracias a la separación en módulos y capas, cada etapa se pudo agregar sin desarmar las anteriores, y las pruebas dieron confianza para seguir avanzando. El uso de estándares —SQL parametrizado, API REST, cookies httpOnly, migraciones, formato consistente— evitó soluciones improvisadas.</p>
+
+  <p>Como resultado se obtiene una aplicación veterinaria con historial clínico, cobros, caja y lista de precios, con un repositorio ordenado y documentación suficiente para que otra persona pueda entenderla y continuarla. Los próximos pasos naturales serían la venta de productos con stock y reportes, siempre preservando las reglas y la arquitectura ya construidas.</p>
+
+  <div class="nota"><strong>Cierre:</strong> el proyecto cumple el objetivo planteado: resolver un problema concreto aplicando los conceptos de la materia de manera demostrable, mantenible y verificable.</div>
+
+  <p class="pie">Sistema de gestión veterinaria · Mauricio Nieva · Legajo 63984 · Comisión 11<br>
+  Metodología de Sistemas II · Segundo parcial · noviembre de 2026</p>
+</section>
+
+</body>
+</html>
