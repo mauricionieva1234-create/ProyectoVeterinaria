@@ -2,8 +2,15 @@
 
 Archivos para presentar el proyecto en Metodología de Sistemas II:
 
-- **`Presentacion-Proyecto-Segundo-Parcial.pdf`** es el archivo para enviar.
-- `Presentacion-Proyecto-Segundo-Parcial.html` es la fuente editable. Si hace falta corregir un dato, se edita y se vuelve a generar el PDF.
+- **`Presentacion-Proyecto-Segundo-Parcial.pdf`** es el archivo para enviar en formato final.
+- **`Presentacion-Proyecto-Segundo-Parcial.docx`** es la misma entrega en formato editable (Word).
+- `Presentacion-Proyecto-Segundo-Parcial.html` es la fuente única del contenido. Si hay que corregir un dato, se edita ese archivo y se regeneran los otros dos.
+
+## Cómo corregir el documento
+
+1. Editar el texto en `Presentacion-Proyecto-Segundo-Parcial.html`.
+2. Generar el PDF con el comando de abajo.
+3. Generar el Word con `python docs/entrega/generar_docx.py` (necesita `python-docx` y `beautifulsoup4`).
 
 ## Datos de la portada
 
